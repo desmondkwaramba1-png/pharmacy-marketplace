@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  phone        String?
+  passwordHash String
+  firstName    String?
+  lastName     String?
+  role         String   @default("pharmacist")
+  isVerified   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  pharmacy         Pharmacy?
+  inventoryUpdates PharmacyInventory[]
+}
+
+model Pharmacy {
+  id             String  @id @default(cuid())
+  name           String
+  address        String
+  suburb         String?
+  city           String  @default("Harare")
+  latitude       Float
+  longitude      Float
+  phone          String?
+  email          String?
+  operatingHours String? // JSON string
+  logoUrl        String?
+  isActive       Boolean @default(true)
+  ownerId        String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner     User?               @relation(fields: [ownerId], references: [id])
+  inventory PharmacyInventory[]
+}
+
+model Medicine {
+  id            String  @id @default(cuid())
+  genericName   String
+  brandName     String?
+  dosage        String?
+  form          String?
+  category      String?
+  description   String?
+  standardPrice Float?
+  imageUrl      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inventory PharmacyInventory[]
+}
+
+model PharmacyInventory {
+  id          String   @id @default(cuid())
+  pharmacyId  String
+  medicineId  String
+  stockStatus String   @default("in_stock")
+  quantity    Int      @default(0)
+  price       Float?
+  lastUpdated DateTime @default(now())
+  updatedById String?
+
+  pharmacy  Pharmacy @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
+  medicine  Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
+  updatedBy User?    @relation(fields: [updatedById], references: [id])
+
+  @@unique([pharmacyId, medicineId])
+}
+
+model SearchLog {
+  id           String   @id @default(cuid())
+  searchQuery  String
+  userLat      Float?
+  userLng      Float?
+  resultsCount Int      @default(0)
+  searchedAt   DateTime @default(now())
+}

@@ -1,0 +1,51 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+bin/
+obj/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Git
+.git/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Database
+prisma/dev.db
+prisma/dev.db-journal
+*.sqlite
+*.db
+
+# Mobile
+.expo/
+*.apk
+*.ipa
+
+# Dependency directories
+backend/node_modules/
+frontend/node_modules/
+
+# Logs
+logs
+*.log
