@@ -1,13 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '../api/supabaseClient';
 import type { User } from '../types';
-import { authApi } from '../api/auth';
 
 interface AuthContextValue {
   user: User | null;
-  token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -15,36 +14,56 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('medifind_token');
-    const savedUser = localStorage.getItem('medifind_user');
-    if (savedToken && savedUser) {
-      setToken(savedToken);
-      try { setUser(JSON.parse(savedUser)); } catch { /* ignore */ }
-    }
-    setIsLoading(false);
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setUser(mapSupabaseUser(session.user));
+      }
+      setIsLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        setUser(mapSupabaseUser(session.user));
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
+  // Helper to map Supabase user to our app's User type
+  const mapSupabaseUser = (sbUser: any): User => ({
+    id: sbUser.id,
+    email: sbUser.email || '',
+    firstName: sbUser.user_metadata?.firstName || '',
+    lastName: sbUser.user_metadata?.lastName || '',
+    role: sbUser.user_metadata?.role || 'patient',
+  });
+
   const login = async (email: string, password: string) => {
-    const data = await authApi.login(email, password);
-    localStorage.setItem('medifind_token', data.token);
-    localStorage.setItem('medifind_user', JSON.stringify(data.user));
-    setToken(data.token);
-    setUser(data.user);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
   };
 
-  const logout = () => {
-    localStorage.removeItem('medifind_token');
-    localStorage.removeItem('medifind_user');
-    setToken(null);
-    setUser(null);
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isLoading, 
+      login, 
+      logout, 
+      isAuthenticated: !!user 
+    }}>
       {children}
     </AuthContext.Provider>
   );

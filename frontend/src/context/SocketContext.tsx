@@ -1,51 +1,52 @@
 import React, { createContext, useContext, useEffect, ReactNode } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { supabase } from '../api/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface SocketContextType {
-  socket: Socket | null;
+  // We expose the Supabase client here if needed for direct subscriptions elsewhere
+  supabase: any; 
 }
 
-const SocketContext = createContext<SocketContextType>({ socket: null });
-
-// Update with your actual backend URL if different
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const SocketContext = createContext<SocketContextType>({ supabase });
 
 export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const queryClient = useQueryClient();
-  const socketRef = React.useRef<Socket | null>(null);
 
   useEffect(() => {
-    // Initialize socket connection
-    const socket = io(SOCKET_URL, {
-      withCredentials: true,
-      transports: ['websocket', 'polling'], // Fallback for various network environments (Zim use case)
-    });
-
-    socketRef.current = socket;
-
-    socket.on('connect', () => {
-      console.log('🔌 Connected to real-time stock system');
-    });
-
-    socket.on('stockUpdated', (data: { pharmacyId: string; medicineId: string; newStock: number; status: string }) => {
-      console.log('📡 Real-time stock update received:', data);
-      
-      // Invalidate relevant queries to trigger UI refresh
-      // This will refresh any component using medicine-specific data or inventory lists
-      queryClient.invalidateQueries({ queryKey: ['medicine', data.medicineId] });
-      queryClient.invalidateQueries({ queryKey: ['pharmacies'] });
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
-      queryClient.invalidateQueries({ queryKey: ['medicines'] });
-    });
+    // Supabase Realtime Subscription for inventory changes
+    const channel = supabase
+      .channel('inventory-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pharmacy_inventory'
+        },
+        (payload) => {
+          console.log('📡 Real-time inventory change:', payload);
+          
+          // Invalidate relevant queries to trigger UI refresh
+          // This ensures stock numbers in search and detail pages update instantly
+          queryClient.invalidateQueries({ queryKey: ['search'] });
+          queryClient.invalidateQueries({ queryKey: ['medicine'] });
+          queryClient.invalidateQueries({ queryKey: ['pharmacies'] });
+          queryClient.invalidateQueries({ queryKey: ['inventory'] });
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('🔌 Connected to Supabase real-time inventory system');
+        }
+      });
 
     return () => {
-      socket.disconnect();
+      supabase.removeChannel(channel);
     };
   }, [queryClient]);
 
   return (
-    <SocketContext.Provider value={{ socket: socketRef.current }}>
+    <SocketContext.Provider value={{ supabase }}>
       {children}
     </SocketContext.Provider>
   );
