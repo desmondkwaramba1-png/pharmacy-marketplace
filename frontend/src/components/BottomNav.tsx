@@ -1,13 +1,16 @@
 import { NavLink } from 'react-router-dom';
-import { FiSearch, FiMap, FiBriefcase } from 'react-icons/fi';
-
-const tabs = [
-  { to: '/', label: 'Search', icon: <FiSearch size={22} />, exact: true },
-  { to: '/map', label: 'Map', icon: <FiMap size={22} /> },
-  { to: '/admin/login', label: 'Admin', icon: <FiBriefcase size={22} /> },
-];
+import { useAuth } from '../context/AuthContext';
+import { FiSearch, FiMap, FiUser } from 'react-icons/fi';
 
 export default function BottomNav() {
+  const { isAuthenticated, user } = useAuth();
+
+  const tabs = [
+    { to: '/', label: 'Search', icon: <FiSearch size={22} />, exact: true },
+    { to: '/map', label: 'Map', icon: <FiMap size={22} /> },
+    { to: '/login', label: isAuthenticated ? (user?.firstName || 'Account') : 'Sign In', icon: <FiUser size={22} /> },
+  ];
+
   return (
     <nav className="bottom-nav" aria-label="Main navigation">
       {tabs.map((tab) => (

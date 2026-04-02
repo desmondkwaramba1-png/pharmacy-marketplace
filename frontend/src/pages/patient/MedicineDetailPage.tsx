@@ -4,8 +4,10 @@ import { medicinesApi } from '../../api/medicines';
 import { useGeolocation } from '../../hooks/useGeolocation';
 import Badge from '../../components/ui/Badge';
 import { SkeletonList } from '../../components/ui/SkeletonCard';
+import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import type { StockStatus } from '../../types';
-import { FiChevronLeft, FiMap, FiPhone, FiInfo } from 'react-icons/fi';
+import { FiChevronLeft, FiMap, FiPhone, FiInfo, FiShoppingCart, FiLogIn } from 'react-icons/fi';
 import { FaPills, FaMapMarkerAlt, FaClinicMedical } from 'react-icons/fa';
 
 function formatDistance(km: number | null | undefined): string {
@@ -35,15 +37,22 @@ export default function MedicineDetailPage() {
   const lat = coords?.lat ?? (urlLat ? parseFloat(urlLat) : null);
   const lng = coords?.lng ?? (urlLng ? parseFloat(urlLng) : null);
 
+  const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
+
   const { data: medicine, isLoading, isError } = useQuery({
     queryKey: ['medicine', id, lat, lng],
     queryFn: () => medicinesApi.getById(id!, lat, lng),
     enabled: !!id,
   });
 
-  const getDirections = (pharmacyName: string, address: string) => {
-    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${pharmacyName} ${address} Zimbabwe`)}`;
-    window.open(url, '_blank');
+  const getDirections = (pharmacyName: string, address: string, lat?: number, lng?: number) => {
+    if (lat && lng) {
+      navigate(`/map?destLat=${lat}&destLng=${lng}`);
+    } else {
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${pharmacyName} ${address} Zimbabwe`)}`;
+      window.open(url, '_blank');
+    }
   };
 
   if (isLoading) {
@@ -173,13 +182,38 @@ export default function MedicineDetailPage() {
                 )}
               </div>
               <div className="last-updated">Updated {timeAgo(avail.lastUpdated)}</div>
-              <div className="pharmacy-avail-actions">
-                {avail.phone && (
-                  <a href={`tel:${avail.phone}`} className="btn-outline-sm"><FiPhone /> Call</a>
+              <div className="pharmacy-avail-actions" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {isAuthenticated ? (
+                  <button 
+                    className="btn btn-primary btn-sm" 
+                    style={{ flex: 1, minWidth: '120px' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(avail.pharmacyId, medicine.id);
+                    }}
+                  >
+                    <FiShoppingCart /> Add to Cart
+                  </button>
+                ) : (
+                  <button 
+                    className="btn btn-primary btn-sm" 
+                    style={{ flex: 1, minWidth: '120px' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+                    }}
+                  >
+                    <FiLogIn /> Sign In to Reserve
+                  </button>
                 )}
-                <button className="btn-outline-sm" onClick={() => getDirections(avail.pharmacyName, avail.address)}>
-                  <FaMapMarkerAlt /> Directions
-                </button>
+                <div style={{ display: 'flex', gap: '8px', flex: 1 }}>
+                  {avail.phone && (
+                    <a href={`tel:${avail.phone}`} className="btn-outline-sm" style={{ flex: 1, justifyContent: 'center' }}><FiPhone /> Call</a>
+                  )}
+                  <button className="btn-outline-sm" style={{ flex: 1 }} onClick={() => getDirections(avail.pharmacyName, avail.address, avail.latitude, avail.longitude)}>
+                    <FaMapMarkerAlt /> Directions
+                  </button>
+                </div>
               </div>
             </div>
           ))}

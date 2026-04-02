@@ -15,6 +15,7 @@ function generateToken(userId: string, email: string, role: string): string {
 export async function register(req: Request, res: Response): Promise<void> {
   try {
     const { email, password, firstName, lastName, phone } = req.body;
+    const sessionId = req.headers['x-session-id'] as string;
 
     if (!email || !password) {
       res.status(400).json({ error: 'Email and password are required' });
@@ -37,6 +38,14 @@ export async function register(req: Request, res: Response): Promise<void> {
       data: { email, passwordHash, firstName, lastName, phone },
     });
 
+    // Link anonymous cart if exists
+    if (sessionId) {
+      await prisma.cart.updateMany({
+        where: { sessionId, userId: null },
+        data: { userId: user.id },
+      });
+    }
+
     const token = generateToken(user.id, user.email, user.role);
 
     res.status(201).json({
@@ -58,6 +67,7 @@ export async function register(req: Request, res: Response): Promise<void> {
 export async function login(req: Request, res: Response): Promise<void> {
   try {
     const { email, password } = req.body;
+    const sessionId = req.headers['x-session-id'] as string;
 
     if (!email || !password) {
       res.status(400).json({ error: 'Email and password are required' });
@@ -78,6 +88,14 @@ export async function login(req: Request, res: Response): Promise<void> {
     if (!valid) {
       res.status(401).json({ error: 'Invalid credentials' });
       return;
+    }
+
+    // Link anonymous cart if exists
+    if (sessionId) {
+      await prisma.cart.updateMany({
+        where: { sessionId, userId: null },
+        data: { userId: user.id },
+      });
     }
 
     const token = generateToken(user.id, user.email, user.role);
@@ -106,6 +124,7 @@ export async function login(req: Request, res: Response): Promise<void> {
 
 export async function getMe(req: Request & { user?: any }, res: Response): Promise<void> {
   try {
+    const sessionId = req.headers['x-session-id'] as string;
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
       include: { pharmacy: true },
@@ -114,6 +133,14 @@ export async function getMe(req: Request & { user?: any }, res: Response): Promi
     if (!user) {
       res.status(404).json({ error: 'User not found' });
       return;
+    }
+
+    // Link anonymous cart if exists
+    if (sessionId) {
+      await prisma.cart.updateMany({
+        where: { sessionId, userId: null },
+        data: { userId: user.id },
+      });
     }
 
     res.json({

@@ -56,6 +56,38 @@ export async function authenticate(
   }
 }
 
+export async function optionalAuthenticate(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    return next();
+  }
+
+  try {
+    const token = authHeader.split(' ')[1];
+    const secret = process.env.JWT_SECRET || 'super-secret-key-123';
+
+    const decoded = jwt.verify(token, secret) as {
+      userId: string;
+      email: string;
+      role: string;
+    };
+
+    req.user = {
+      id: decoded.userId,
+      email: decoded.email,
+      role: decoded.role,
+    };
+  } catch (err) {
+    // If token is invalid, just proceed without user context
+    console.error('Optional auth error:', err);
+  }
+  next();
+}
+
 export function requireRole(...roles: string[]) {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {

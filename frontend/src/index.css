@@ -1044,24 +1044,162 @@ img { max-width: 100%; display: block; }
 .gap-12 { gap: 12px; }
 
 /* ============================================================
+   CART DRAWER
+   ============================================================ */
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+/* ============================================================
+   RESPONSIVE — SMALL PHONES (max-width: 374px)
+   ============================================================ */
+@media (max-width: 374px) {
+  :root {
+    --screen-padding: 12px;
+    --header-height: 48px;
+    --bottom-nav-height: 56px;
+  }
+  .home-title { font-size: 20px; }
+  .home-greeting { font-size: 12px; }
+  .popular-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .popular-card { padding: 10px 8px; }
+  .popular-card-name { font-size: 11px; }
+  .medicine-name { font-size: 14px; }
+  .medicine-detail-name { font-size: 18px; }
+  .medicine-detail-hero { padding: 24px var(--screen-padding); }
+  .medicine-detail-hero-icon { font-size: 48px; }
+  .info-grid { grid-template-columns: 1fr; }
+  .pharmacy-avail-actions { flex-direction: column; }
+  .pharmacy-avail-actions > * { width: 100%; }
+  .card-actions { flex-direction: column; }
+  .card-actions > * { width: 100%; }
+  .btn { font-size: 13px; height: 40px; padding: 0 14px; }
+  .btn-outline-sm { font-size: 12px; height: 30px; padding: 0 10px; }
+  .search-bar input { height: 42px; font-size: 14px; }
+  .stat-value { font-size: 22px; }
+  .section-title { font-size: 14px; }
+  .app-header-title { font-size: 16px; }
+  .modal-sheet { padding: 16px var(--screen-padding) calc(var(--screen-padding) + env(safe-area-inset-bottom)); }
+  .filter-pills { gap: 6px; }
+  .pill { height: 28px; padding: 0 10px; font-size: 12px; }
+  .empty-state { padding: 32px var(--screen-padding); }
+  .empty-state-icon { font-size: 40px; }
+  .empty-state-title { font-size: 16px; }
+}
+
+/* ============================================================
    RESPONSIVE — TABLET (768px+)
    ============================================================ */
 @media (min-width: 768px) {
-  .popular-grid { grid-template-columns: repeat(4, 1fr); }
+  :root {
+    --screen-padding: 24px;
+  }
+  .popular-grid { grid-template-columns: repeat(4, 1fr); gap: 14px; }
   .stats-grid { grid-template-columns: repeat(4, 1fr); }
-  .page-content { padding: 24px 32px; }
+  .page-content { padding: 24px 32px; max-width: 768px; }
   .medicine-card { border-radius: var(--radius-xl); }
-  .bottom-nav { max-width: 768px; left: 50%; transform: translateX(-50%); border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
-  .admin-header { max-width: 768px; margin: 0 auto; }
+  .bottom-nav {
+    max-width: 480px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  }
+  .home-header { padding: 28px 32px 36px; }
+  .home-title { font-size: 28px; }
+  .search-lift { padding: 20px; }
+  .medicine-detail-hero { padding: 40px 32px; }
+  .medicine-detail-name { font-size: 26px; }
+  .info-grid { grid-template-columns: 1fr 1fr 1fr; }
+  .modal-sheet { max-width: 600px; border-radius: var(--radius-xl); }
+  .modal-overlay {
+    align-items: center;
+    padding: 24px;
+  }
+  .map-bottom-sheet {
+    max-width: 480px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+  .results-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .pharmacy-availability-card { padding: 16px; }
 }
 
 /* ============================================================
    RESPONSIVE — DESKTOP (1024px+)
    ============================================================ */
 @media (min-width: 1024px) {
+  :root {
+    --screen-padding: 32px;
+  }
   .popular-grid { grid-template-columns: repeat(6, 1fr); }
-  .page-content { max-width: 900px; }
+  .page-content { max-width: 960px; padding: 32px 40px; }
   .bottom-nav { display: none; }
+  .page { padding-bottom: 0; }
+
+  .home-header {
+    padding: 40px 40px 48px;
+    max-width: 960px;
+    margin: 0 auto;
+    width: 100%;
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  }
+  .home-title { font-size: 32px; }
+
+  .app-header {
+    max-width: 960px;
+    margin: 0 auto;
+    border-left: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
+  }
+
+  .medicine-detail-hero {
+    max-width: 960px;
+    margin: 0 auto;
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    padding: 48px 40px;
+  }
+  .medicine-detail-name { font-size: 28px; }
+
+  .results-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .modal-overlay {
+    align-items: center;
+    padding: 40px;
+  }
+  .modal-sheet {
+    max-width: 560px;
+    border-radius: var(--radius-xl);
+    animation: fadeScaleIn 0.2s ease;
+  }
+
+  @keyframes fadeScaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .map-bottom-sheet {
+    max-width: 400px;
+    left: auto;
+    right: 24px;
+    bottom: 24px;
+    border-radius: var(--radius-xl);
+    transform: none;
+  }
+
+  .map-wrapper {
+    min-height: calc(100dvh - var(--header-height));
+  }
 
   .desktop-sidebar {
     width: 240px;
@@ -1077,7 +1215,59 @@ img { max-width: 100%; display: block; }
   }
 
   .desktop-main { margin-left: 240px; }
-  .page { padding-bottom: 0; }
+}
+
+/* ============================================================
+   RESPONSIVE — LARGE DESKTOP (1440px+)
+   ============================================================ */
+@media (min-width: 1440px) {
+  .page-content { max-width: 1080px; }
+  .results-list {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  .popular-grid { grid-template-columns: repeat(6, 1fr); gap: 16px; }
+}
+
+/* ============================================================
+   SAFE AREA & TOUCH OPTIMIZATIONS
+   ============================================================ */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .app-header {
+    padding-top: env(safe-area-inset-top);
+    height: calc(var(--header-height) + env(safe-area-inset-top));
+  }
+  .bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+    height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+  }
+  .page {
+    padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+  }
+}
+
+/* Ensure touch targets are at least 44px */
+@media (pointer: coarse) {
+  .btn { min-height: 44px; }
+  .btn-outline-sm { min-height: 40px; }
+  .pill { min-height: 36px; }
+  .bottom-nav-tab { min-height: 48px; }
+  .back-btn { min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+  .btn-icon { min-width: 44px; min-height: 44px; }
+}
+
+/* Prevent text zoom on iOS inputs */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .search-bar input,
+  .form-input,
+  .form-textarea,
+  select { font-size: 16px !important; }
+}
+
+/* Print styles */
+@media print {
+  .bottom-nav, .app-header, .btn-icon, .back-btn { display: none !important; }
+  .page { padding-bottom: 0 !important; }
+  .page-content { max-width: 100% !important; }
 }
 
 /* ============================================================
@@ -1096,3 +1286,4 @@ img { max-width: 100%; display: block; }
   50% { transform: scale(1.5); opacity: 0.5; }
 }
 .user-marker-pulse { animation: pulse 1.5s ease-in-out infinite; }
+

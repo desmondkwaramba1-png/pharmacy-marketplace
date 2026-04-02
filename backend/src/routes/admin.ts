@@ -8,7 +8,9 @@ import {
   getPharmacyProfile,
   updatePharmacyProfile,
   getAnalytics,
+  uploadImage,
 } from '../controllers/adminController';
+import { upload } from '../middleware/upload';
 
 const router = Router();
 
@@ -22,6 +24,8 @@ router.delete('/inventory/:medicineId', removeInventoryItem);
 
 router.get('/pharmacy', getPharmacyProfile);
 router.put('/pharmacy', updatePharmacyProfile);
+
+router.post('/upload-image', upload.single('image'), uploadImage);
 
 router.get('/analytics', getAnalytics);
 

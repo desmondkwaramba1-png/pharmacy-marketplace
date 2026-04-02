@@ -14,7 +14,9 @@ import authRoutes from './routes/auth';
 import medicineRoutes from './routes/medicines';
 import pharmacyRoutes from './routes/pharmacies';
 import adminRoutes from './routes/admin';
+import cartRoutes from './routes/cart';
 import { errorHandler, notFound } from './middleware/errorHandler';
+import { cleanupExpiredReservations } from './controllers/cartController';
 
 const app = express();
 const httpServer = createServer(app);
@@ -44,7 +46,7 @@ app.use('/api', limiter);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 1000, // Increased for development
   message: { error: 'Too many login attempts, try again in 15 minutes' },
 });
 
@@ -63,8 +65,10 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/medicines', medicineRoutes);
 app.use('/api/pharmacies', pharmacyRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/cart', cartRoutes);
 
 // 404 & Error handling
+app.use('/uploads', express.static('public/uploads'));
 app.use(notFound);
 app.use(errorHandler);
 
@@ -72,6 +76,18 @@ httpServer.listen(PORT, () => {
   console.log(`\n🚀 MediFind API running on http://localhost:${PORT}`);
   console.log(`   Health check: http://localhost:${PORT}/health`);
   console.log(`   Environment: ${process.env.NODE_ENV || 'development'}\n`);
+
+  // Background worker: clean up expired cart reservations every 60 seconds
+  setInterval(async () => {
+    try {
+      const count = await cleanupExpiredReservations();
+      if (count > 0) {
+        console.log(`🧹 Cleaned up ${count} expired cart reservation(s)`);
+      }
+    } catch (err) {
+      console.error('Reservation cleanup error:', err);
+    }
+  }, 60_000);
 });
 
 export default app;

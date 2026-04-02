@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { pharmaciesApi } from '../../api/pharmacies';
 import { useGeolocation } from '../../hooks/useGeolocation';
-import Badge from '../../components/ui/Badge';
 import type { Pharmacy, StockStatus } from '../../types';
 import { FiChevronLeft, FiMap, FiList, FiPhone } from 'react-icons/fi';
 import { FaClinicMedical, FaMapMarkerAlt } from 'react-icons/fa';
@@ -20,8 +19,18 @@ export default function MapViewPage() {
 
   const urlLat = searchParams.get('lat');
   const urlLng = searchParams.get('lng');
+  const destLat = searchParams.get('destLat');
+  const destLng = searchParams.get('destLng');
+  
   const lat = coords?.lat ?? (urlLat ? parseFloat(urlLat) : -17.8292);
   const lng = coords?.lng ?? (urlLng ? parseFloat(urlLng) : 31.0522);
+
+  // Automatically switch to map view if a destination is provided
+  useState(() => {
+    if (destLat && destLng) {
+      setShowMap(true);
+    }
+  });
 
   const { data: pharmacies = [], isLoading } = useQuery({
     queryKey: ['pharmacies', lat, lng],
@@ -29,9 +38,26 @@ export default function MapViewPage() {
     staleTime: 15 * 60 * 1000,
   });
 
+  const { data: routeData } = useQuery({
+    queryKey: ['route', lng, lat, destLng, destLat],
+    queryFn: async () => {
+      if (!destLat || !destLng || !lng || !lat) return null;
+      const url = `https://router.project-osrm.org/route/v1/driving/${lng},${lat};${destLng},${destLat}?overview=full&geometries=geojson`;
+      const res = await fetch(url);
+      const json = await res.json();
+      if (json.code !== 'Ok' || !json.routes.length) return null;
+      // OSRM returns [lng, lat], Leaflet polyline expects [lat, lng]
+      const coordinates = json.routes[0].geometry.coordinates.map((c: number[]) => [c[1], c[0]]);
+      return coordinates as [number, number][];
+    },
+    enabled: !!destLat && !!destLng && !!lat && !!lng,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const getDirections = (pharmacy: Pharmacy) => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${pharmacy.latitude},${pharmacy.longitude}`;
-    window.open(url, '_blank');
+    navigate(`/map?destLat=${pharmacy.latitude}&destLng=${pharmacy.longitude}`);
+    setShowMap(true);
+    setSelectedPharmacy(null);
   };
 
   return (
@@ -119,10 +145,12 @@ export default function MapViewPage() {
             <div className="empty-state"><div className="empty-state-icon"><FiMap /></div><p>Loading map...</p></div>
           }>
             <MapComponent
-              center={[lat, lng]}
+              center={destLat && destLng ? [parseFloat(destLat), parseFloat(destLng)] : [lat, lng]}
               pharmacies={pharmacies}
               userCoords={[lat, lng]}
               onPharmacyClick={(p) => setSelectedPharmacy(p)}
+              routePositions={routeData || undefined}
+              bounds={destLat && destLng ? [[lat, lng], [parseFloat(destLat), parseFloat(destLng)]] : undefined}
             />
           </Suspense>
 

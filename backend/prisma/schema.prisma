@@ -21,6 +21,7 @@ model User {
 
   pharmacy         Pharmacy?
   inventoryUpdates PharmacyInventory[]
+  cart             Cart?
 }
 
 model Pharmacy {
@@ -43,6 +44,7 @@ model Pharmacy {
 
   owner     User?               @relation(fields: [ownerId], references: [id])
   inventory PharmacyInventory[]
+  cartItems CartItem[]
 }
 
 model Medicine {
@@ -60,17 +62,19 @@ model Medicine {
   updatedAt DateTime @updatedAt
 
   inventory PharmacyInventory[]
+  cartItems CartItem[]
 }
 
 model PharmacyInventory {
-  id          String   @id @default(cuid())
-  pharmacyId  String
-  medicineId  String
-  stockStatus String   @default("in_stock")
-  quantity    Int      @default(0)
-  price       Float?
-  lastUpdated DateTime @default(now())
-  updatedById String?
+  id               String   @id @default(cuid())
+  pharmacyId       String
+  medicineId       String
+  stockStatus      String   @default("in_stock")
+  quantity         Int      @default(0)
+  reservedQuantity Int      @default(0)
+  price            Float?
+  lastUpdated      DateTime @default(now())
+  updatedById      String?
 
   pharmacy  Pharmacy @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
   medicine  Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
@@ -86,4 +90,31 @@ model SearchLog {
   userLng      Float?
   resultsCount Int      @default(0)
   searchedAt   DateTime @default(now())
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  sessionId String     @unique
+  userId    String?    @unique
+  user      User?      @relation(fields: [userId], references: [id])
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  items     CartItem[]
+}
+
+model CartItem {
+  id          String   @id @default(cuid())
+  cartId      String
+  pharmacyId  String
+  medicineId  String
+  quantity    Int      @default(1)
+  reservedAt  DateTime @default(now())
+  expiresAt   DateTime
+  status      String   @default("reserved") // reserved | expired | checked_out
+
+  cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  medicine Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
+  pharmacy Pharmacy @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, pharmacyId, medicineId])
 }

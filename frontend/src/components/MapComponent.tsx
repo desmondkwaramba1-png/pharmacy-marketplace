@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Pharmacy, StockStatus } from '../types';
@@ -74,9 +74,21 @@ interface MapComponentProps {
   pharmacies: Pharmacy[];
   userCoords: [number, number];
   onPharmacyClick: (pharmacy: Pharmacy) => void;
+  routePositions?: [number, number][];
+  bounds?: [[number, number], [number, number]];
 }
 
-export default function MapComponent({ center, pharmacies, userCoords, onPharmacyClick }: MapComponentProps) {
+function MapBounds({ bounds }: { bounds: [[number, number], [number, number]] }) {
+  const map = useMap();
+  if (bounds) {
+    try {
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+    } catch (e) {}
+  }
+  return null;
+}
+
+export default function MapComponent({ center, pharmacies, userCoords, onPharmacyClick, routePositions, bounds }: MapComponentProps) {
   return (
     <div className="map-wrapper">
       <MapContainer
@@ -89,7 +101,11 @@ export default function MapComponent({ center, pharmacies, userCoords, onPharmac
           attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MapCenter center={center} />
+        {bounds ? <MapBounds bounds={bounds} /> : <MapCenter center={center} />}
+
+        {routePositions && routePositions.length > 0 && (
+          <Polyline positions={routePositions} color="#2563EB" weight={5} opacity={0.7} dashArray="10, 10" />
+        )}
 
         {/* User location */}
         <Marker position={userCoords} icon={userIcon}>

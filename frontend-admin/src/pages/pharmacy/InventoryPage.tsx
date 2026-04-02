@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { adminApi } from '../../api/auth';
 import { useDebounce } from '../../hooks/useDebounce';
 import Badge from '../../components/ui/Badge';
@@ -15,11 +16,12 @@ const FILTERS: { label: React.ReactNode; value: string }[] = [
   { label: <><FaTimesCircle color="var(--color-error)" style={{ display: 'inline', marginRight: 4 }} /> Out of Stock</>, value: 'out_of_stock' },
 ];
 
-function AddMedicineModal({ onClose, onSave }: { onClose: () => void; onSave: (data: any) => void }) {
+function AddMedicineModal({ onClose, onSave, isLoading }: { onClose: () => void; onSave: (data: any, imageFile: File | null) => void; isLoading: boolean }) {
   const [form, setForm] = useState({
     genericName: '', brandName: '', dosage: '', form: 'tablet',
-    category: '', description: '', imageUrl: '', stockStatus: 'in_stock', quantity: 0, price: '',
+    category: '', description: '', stockStatus: 'in_stock', quantity: 0, price: '',
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const set = (k: string, v: any) => setForm((prev) => ({ ...prev, [k]: v }));
 
@@ -60,8 +62,8 @@ function AddMedicineModal({ onClose, onSave }: { onClose: () => void; onSave: (d
             </select>
           </div>
           <div className="form-group">
-            <label className="form-label">Image URL</label>
-            <input className="form-input" value={form.imageUrl} onChange={(e) => set('imageUrl', e.target.value)} placeholder="https://example.com/image.jpg" />
+            <label className="form-label">Image (Optional)</label>
+            <input className="form-input" type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
           </div>
           <div className="form-group">
             <label className="form-label">Stock Status</label>
@@ -90,13 +92,14 @@ function AddMedicineModal({ onClose, onSave }: { onClose: () => void; onSave: (d
           </div>
         </div>
         <div className="modal-actions">
-          <button className="btn btn-secondary" style={{ flex: 1 }} onClick={onClose}>Cancel</button>
+          <button className="btn btn-secondary" style={{ flex: 1 }} onClick={onClose} disabled={isLoading}>Cancel</button>
           <button
             className="btn btn-primary"
             style={{ flex: 2 }}
-            onClick={() => { if (form.genericName.trim()) onSave(form); }}
+            disabled={isLoading || !form.genericName.trim()}
+            onClick={() => { if (form.genericName.trim()) onSave(form, imageFile); }}
           >
-            Add Medicine
+            {isLoading ? 'Adding...' : 'Add Medicine'}
           </button>
         </div>
       </div>
@@ -106,12 +109,21 @@ function AddMedicineModal({ onClose, onSave }: { onClose: () => void; onSave: (d
 
 export default function InventoryPage() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activeFilter, setActiveFilter] = useState('');
   const [search, setSearch] = useState('');
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(() => searchParams.get('action') === 'add');
   const debouncedSearch = useDebounce(search, 400);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [localEdits, setLocalEdits] = useState<Record<string, { stockStatus: string; quantity: number; price: string }>>({});
+
+  // Remove the action=add query parameter once the modal opens to avoid reopening on reload
+  useState(() => {
+    if (searchParams.get('action') === 'add') {
+      navigate('/admin/inventory', { replace: true });
+    }
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-inventory', activeFilter, debouncedSearch],
@@ -126,8 +138,29 @@ export default function InventoryPage() {
   });
 
   const addMutation = useMutation({
-    mutationFn: adminApi.addMedicine,
+    mutationFn: async ({ formData, imageFile }: { formData: any; imageFile: File | null }) => {
+      let imageUrl = '';
+      if (imageFile) {
+        const res = await adminApi.uploadImage(imageFile);
+        imageUrl = res.imageUrl;
+      }
+      const priceNum = formData.price ? parseFloat(formData.price) : undefined;
+      return adminApi.addMedicine({
+        genericName: formData.genericName,
+        brandName: formData.brandName,
+        dosage: formData.dosage,
+        form: formData.form,
+        category: formData.category,
+        description: formData.description,
+        standardPrice: priceNum,
+        imageUrl,
+        stockStatus: formData.stockStatus,
+        quantity: formData.quantity,
+        price: priceNum,
+      });
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-inventory'] }); setShowModal(false); },
+    onError: (err: any) => { alert(err?.response?.data?.error || 'Failed to add medicine. Please try again.'); },
   });
 
   const deleteMutation = useMutation({
@@ -322,7 +355,8 @@ export default function InventoryPage() {
       {showModal && (
         <AddMedicineModal
           onClose={() => setShowModal(false)}
-          onSave={(formData) => addMutation.mutate(formData)}
+          isLoading={addMutation.isPending}
+          onSave={(formData, imageFile) => addMutation.mutate({ formData, imageFile })}
         />
       )}
     </div>

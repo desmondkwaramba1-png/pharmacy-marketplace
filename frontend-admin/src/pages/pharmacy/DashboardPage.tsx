@@ -108,7 +108,7 @@ export default function DashboardPage() {
             <button
               id="add-medicine-btn"
               className="btn btn-primary btn-sm"
-              onClick={() => navigate('/admin/inventory')}
+              onClick={() => navigate('/admin/inventory?action=add')}
             >
               <FiPlus /> Add Medicine
             </button>

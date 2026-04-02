@@ -239,3 +239,16 @@ export async function getAnalytics(req: AuthRequest, res: Response): Promise<voi
     res.status(500).json({ error: 'Failed to fetch analytics' });
   }
 }
+
+export async function uploadImage(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: 'No image file provided' });
+      return;
+    }
+    const imageUrl = `/uploads/${req.file.filename}`;
+    res.json({ imageUrl });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to upload image' });
+  }
+}

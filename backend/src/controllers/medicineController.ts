@@ -168,23 +168,93 @@ export async function getMedicineById(req: Request, res: Response): Promise<void
   }
 }
 
-export async function getPopularMedicines(_req: Request, res: Response): Promise<void> {
+export async function getPopularMedicines(req: Request, res: Response): Promise<void> {
   try {
+    const { lat, lng } = req.query;
+    const userLat = lat ? parseFloat(String(lat)) : null;
+    const userLng = lng ? parseFloat(String(lng)) : null;
+
     const medicines = await prisma.medicine.findMany({
-      take: 12,
+      take: 20,
       orderBy: { genericName: 'asc' },
-      select: {
-        id: true,
-        genericName: true,
-        brandName: true,
-        dosage: true,
-        form: true,
-        category: true,
-        imageUrl: true,
+      include: {
+        inventory: {
+          where: { stockStatus: { not: 'out_of_stock' } },
+          include: { pharmacy: true },
+          orderBy: { lastUpdated: 'desc' },
+        },
       },
     });
-    res.json(medicines);
+
+    const results = medicines.map((med) => {
+      // Find nearest pharmacy with stock
+      let nearestPharmacy = null;
+      let nearestDistance: number | null = null;
+      let bestPrice: number | null = null;
+      let bestStock: string = 'out_of_stock';
+      let pharmacyCount = med.inventory.filter(i => i.pharmacy?.isActive).length;
+
+      for (const inv of med.inventory) {
+        if (!inv.pharmacy || !inv.pharmacy.isActive) continue;
+        
+        if (inv.price != null && (bestPrice == null || inv.price < bestPrice)) {
+          bestPrice = inv.price;
+        }
+        if (inv.stockStatus === 'in_stock') bestStock = 'in_stock';
+        else if (inv.stockStatus === 'low_stock' && bestStock !== 'in_stock') bestStock = 'low_stock';
+
+        if (userLat && userLng) {
+          const dist = haversineDistance(userLat, userLng, inv.pharmacy.latitude, inv.pharmacy.longitude);
+          if (nearestDistance == null || dist < nearestDistance) {
+            nearestDistance = dist;
+            nearestPharmacy = {
+              id: inv.pharmacy.id,
+              name: inv.pharmacy.name,
+              address: inv.pharmacy.address,
+              suburb: inv.pharmacy.suburb,
+            };
+          }
+        } else if (!nearestPharmacy) {
+          nearestPharmacy = {
+            id: inv.pharmacy.id,
+            name: inv.pharmacy.name,
+            address: inv.pharmacy.address,
+            suburb: inv.pharmacy.suburb,
+          };
+        }
+      }
+
+      return {
+        id: med.id,
+        genericName: med.genericName,
+        brandName: med.brandName,
+        dosage: med.dosage,
+        form: med.form,
+        category: med.category,
+        imageUrl: med.imageUrl,
+        description: med.description,
+        standardPrice: med.standardPrice,
+        nearestPharmacy,
+        distance: nearestDistance,
+        price: bestPrice,
+        stockStatus: bestStock,
+        pharmacyCount,
+      };
+    });
+
+    // Sort by distance if available
+    if (userLat && userLng) {
+      results.sort((a, b) => {
+        if (a.distance != null && b.distance != null) return a.distance - b.distance;
+        if (a.distance != null) return -1;
+        if (b.distance != null) return 1;
+        return 0;
+      });
+    }
+
+    res.json(results);
   } catch (err) {
+    console.error('getPopularMedicines error:', err);
     res.status(500).json({ error: 'Failed to fetch medicines' });
   }
 }

@@ -19,8 +19,11 @@ export const medicinesApi = {
     return data;
   },
 
-  getPopular: async (): Promise<Medicine[]> => {
-    const { data } = await apiClient.get('/medicines/popular');
+  getPopular: async (lat?: number | null, lng?: number | null): Promise<any[]> => {
+    const params: Record<string, any> = {};
+    if (lat != null) params.lat = lat;
+    if (lng != null) params.lng = lng;
+    const { data } = await apiClient.get('/medicines/popular', { params });
     return data;
   },
 };

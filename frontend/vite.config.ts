@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      devOptions: { enabled: true },
+      devOptions: { enabled: false },
       includeAssets: ['favicon.ico', 'icons/*.png'],
       manifest: {
         name: 'MediFind Zimbabwe',
@@ -56,6 +56,10 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/uploads': {
         target: 'http://localhost:3000',
         changeOrigin: true,
       },
