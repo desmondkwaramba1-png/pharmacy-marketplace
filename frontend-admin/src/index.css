@@ -159,7 +159,7 @@ img { max-width: 100%; display: block; }
   cursor: pointer;
 }
 
-.btn-icon:hover { background: var(--color-bg); }
+.btn-icon:hover { background: var(--color-bg); opacity: 0.8; }
 
 .back-btn {
   font-size: 20px;
@@ -196,7 +196,7 @@ img { max-width: 100%; display: block; }
   justify-content: center;
   gap: 4px;
   color: var(--color-text-disabled);
-  transition: color 0.15s, background 0.15s;
+  transition: color 0.15s ease, background 0.15s ease, transform 0.1s ease;
   border-radius: var(--radius-lg);
   margin: 4px;
 }
@@ -377,11 +377,14 @@ img { max-width: 100%; display: block; }
   border-radius: var(--radius-lg);
   padding: 0 20px;
   height: 44px;
-  transition: all 0.15s;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
   cursor: pointer;
   border: none;
   white-space: nowrap;
 }
+
+.pill { transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease; cursor: pointer; }
+
 
 .btn-primary {
   background: var(--color-primary);

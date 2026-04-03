@@ -38,14 +38,15 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
+    const normalizedEmail = email.toLowerCase().trim();
     try {
       if (isRegister) {
-        await register(email, password, firstName, lastName);
+        await register(normalizedEmail, password, firstName, lastName);
         // Supabase will handle the login automatically on successful register (if email confirm is off)
         // or the user will need to confirm email. 
         // We'll let onAuthStateChange handle the redirect.
       } else {
-        await login(email, password);
+        await login(normalizedEmail, password);
         navigate(returnTo, { replace: true });
       }
     } catch (err: any) {
@@ -295,7 +296,17 @@ export default function LoginPage() {
 
           <div className="form-group" style={{ marginBottom: 12 }}>
             <label className="form-label">Email</label>
-            <input className="form-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+            <input 
+              className="form-input" 
+              type="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              placeholder="you@example.com" 
+              required 
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+            />
           </div>
 
           <div className="form-group" style={{ marginBottom: 20 }}>
