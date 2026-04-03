@@ -36,6 +36,7 @@ export interface Pharmacy {
   distance?: number | null;
   operatingHours?: Record<string, string> | null;
   isActive: boolean;
+  logoUrl?: string;
 }
 
 export interface SearchResult {
