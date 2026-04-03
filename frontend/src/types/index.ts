@@ -110,3 +110,25 @@ export interface Coords {
   lat: number;
   lng: number;
 }
+
+export interface CartItem {
+  id: string;
+  cartId: string;
+  pharmacyId: string;
+  medicineId: string;
+  quantity: number;
+  reservedAt: string;
+  expiresAt: string;
+  status: string;
+  medicine: Medicine | null;
+  pharmacy: Pharmacy | null;
+  price: number;
+  remainingSeconds: number;
+  isExpired: boolean;
+}
+
+export interface CartResponse {
+  items: CartItem[];
+  total: number;
+  itemCount: number;
+}

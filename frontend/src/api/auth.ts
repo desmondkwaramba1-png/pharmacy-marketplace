@@ -1,55 +1,60 @@
-import apiClient from './client';
-import type { User, InventoryItem, AdminAnalytics, Pharmacy } from '../types';
+import { supabase } from './supabaseClient';
+import type { User } from '../types';
 
 export const authApi = {
   login: async (email: string, password: string): Promise<{ token: string; user: User }> => {
-    const { data } = await apiClient.post('/auth/login', { email, password });
-    return data;
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    
+    return {
+      token: data.session?.access_token || '',
+      user: {
+        id: data.user.id,
+        email: data.user.email || '',
+        firstName: data.user.user_metadata?.firstName,
+        lastName: data.user.user_metadata?.lastName,
+        role: data.user.user_metadata?.role || 'patient'
+      }
+    };
   },
 
   register: async (email: string, password: string, firstName?: string, lastName?: string): Promise<{ token: string; user: User }> => {
-    const { data } = await apiClient.post('/auth/register', { email, password, firstName, lastName });
-    return data;
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          firstName,
+          lastName,
+          role: 'patient'
+        }
+      }
+    });
+
+    if (error) throw error;
+    
+    return {
+      token: data.session?.access_token || '',
+      user: {
+        id: data.user!.id,
+        email: data.user!.email || '',
+        firstName,
+        lastName,
+        role: 'patient'
+      }
+    };
   },
 
   getMe: async (): Promise<User> => {
-    const { data } = await apiClient.get('/auth/me');
-    return data;
-  },
-};
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
 
-export const adminApi = {
-  getInventory: async (params?: { status?: string; q?: string; page?: number }): Promise<{ inventory: InventoryItem[]; total: number; stats: any[] }> => {
-    const { data } = await apiClient.get('/admin/inventory', { params });
-    return data;
-  },
-
-  updateInventory: async (medicineId: string, payload: { stockStatus: string; quantity?: number; price?: number }): Promise<InventoryItem> => {
-    const { data } = await apiClient.put(`/admin/inventory/${medicineId}`, payload);
-    return data;
-  },
-
-  addMedicine: async (payload: any): Promise<InventoryItem> => {
-    const { data } = await apiClient.post('/admin/inventory', payload);
-    return data;
-  },
-
-  removeMedicine: async (medicineId: string): Promise<void> => {
-    await apiClient.delete(`/admin/inventory/${medicineId}`);
-  },
-
-  getPharmacy: async (): Promise<Pharmacy> => {
-    const { data } = await apiClient.get('/admin/pharmacy');
-    return data;
-  },
-
-  updatePharmacy: async (payload: Partial<Pharmacy>): Promise<Pharmacy> => {
-    const { data } = await apiClient.put('/admin/pharmacy', payload);
-    return data;
-  },
-
-  getAnalytics: async (): Promise<AdminAnalytics> => {
-    const { data } = await apiClient.get('/admin/analytics');
-    return data;
+    return {
+      id: user.id,
+      email: user.email || '',
+      firstName: user.user_metadata?.firstName,
+      lastName: user.user_metadata?.lastName,
+      role: user.user_metadata?.role || 'patient'
+    };
   },
 };

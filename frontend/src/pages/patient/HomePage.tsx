@@ -33,7 +33,7 @@ export default function HomePage() {
   const { data: popular } = useQuery<any[]>({
     queryKey: ['popular-medicines', coords?.lat, coords?.lng],
     queryFn: () => medicinesApi.getPopular(coords?.lat, coords?.lng),
-    staleTime: 60 * 60 * 1000,
+    staleTime: 60 * 1000,
   });
 
   const handleSearch = (q: string) => {

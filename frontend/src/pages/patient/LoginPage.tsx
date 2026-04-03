@@ -21,7 +21,7 @@ function timeAgo(dateStr: string): string {
 export default function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isAuthenticated, user, login, logout } = useAuth();
+  const { isAuthenticated, user, login, register, logout } = useAuth();
   const { cart, setCartOpen } = useCart();
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
@@ -40,16 +40,16 @@ export default function LoginPage() {
     setLoading(true);
     try {
       if (isRegister) {
-        const data = await authApi.register(email, password, firstName, lastName);
-        localStorage.setItem('medifind_token', data.token);
-        localStorage.setItem('medifind_user', JSON.stringify(data.user));
-        window.location.href = returnTo;
+        await register(email, password, firstName, lastName);
+        // Supabase will handle the login automatically on successful register (if email confirm is off)
+        // or the user will need to confirm email. 
+        // We'll let onAuthStateChange handle the redirect.
       } else {
         await login(email, password);
         navigate(returnTo, { replace: true });
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Something went wrong. Please try again.');
+      setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }

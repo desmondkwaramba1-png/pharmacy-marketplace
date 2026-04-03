@@ -96,6 +96,7 @@ export const adminApi = {
       quantity: item.quantity,
       price: item.price,
       lastUpdated: item.last_updated,
+      updatedBy: item.updated_by ? { id: item.updated_by } : null,
       medicine: {
         id: item.medicine.id,
         genericName: item.medicine.generic_name,

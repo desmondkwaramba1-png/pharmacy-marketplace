@@ -135,6 +135,7 @@ export default function InventoryPage() {
     mutationFn: ({ medicineId, payload }: { medicineId: string; payload: any }) =>
       adminApi.updateInventory(medicineId, payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-inventory'] }),
+    onError: (err: any) => { alert(err.message || 'Failed to update stock. Please try again.'); },
   });
 
   const addMutation = useMutation({
@@ -160,7 +161,7 @@ export default function InventoryPage() {
       });
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-inventory'] }); setShowModal(false); },
-    onError: (err: any) => { alert(err?.response?.data?.error || 'Failed to add medicine. Please try again.'); },
+    onError: (err: any) => { alert(err.message || 'Failed to add medicine. Please try again.'); },
   });
 
   const deleteMutation = useMutation({

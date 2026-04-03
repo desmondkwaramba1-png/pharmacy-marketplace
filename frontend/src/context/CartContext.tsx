@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { cartApi, CartResponse } from '../api/cart';
+import { cartApi } from '../api/cart';
+import { CartResponse } from '../types';
 
 interface CartContextType {
   cart: CartResponse | undefined;
@@ -34,7 +35,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       queryClient.invalidateQueries({ queryKey: ['search'] });
     },
     onError: (err: any) => {
-      alert(err.response?.data?.error || 'Failed to add item. Maybe not enough stock?');
+      alert(err.message || 'Failed to add item. Maybe not enough stock?');
     }
   });
 

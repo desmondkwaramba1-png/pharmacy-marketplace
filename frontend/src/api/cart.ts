@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { CartResponse } from '../api/cart';
+import { CartResponse } from '../types';
 
 // Mapping helpers to convert Supabase snake_case to Frontend camelCase
 const mapMedicine = (m: any) => m ? ({
@@ -23,6 +23,7 @@ const mapPharmacy = (p: any) => p ? ({
   phone: p.phone,
   latitude: p.latitude,
   longitude: p.longitude,
+  isActive: p.is_active ?? true
 }) : null;
 
 const mapCartItem = (item: any) => ({
@@ -53,7 +54,7 @@ async function getOrCreateCartId(): Promise<string> {
       .from('carts')
       .select('id')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
     
     if (userCart) return userCart.id;
   }
@@ -63,7 +64,7 @@ async function getOrCreateCartId(): Promise<string> {
     .from('carts')
     .select('id')
     .eq('session_id', sessionId)
-    .single();
+    .maybeSingle();
 
   if (sessionCart) {
     // If user is logged in, link the session cart to them
@@ -144,7 +145,7 @@ export const cartApi = {
       .eq('pharmacy_id', pId)
       .eq('medicine_id', mId)
       .eq('status', 'reserved')
-      .single();
+      .maybeSingle();
 
     if (existing) {
       await supabase
@@ -171,7 +172,7 @@ export const cartApi = {
       .select('reserved_quantity')
       .eq('pharmacy_id', pId)
       .eq('medicine_id', mId)
-      .single();
+      .maybeSingle();
 
     await supabase
       .from('pharmacy_inventory')

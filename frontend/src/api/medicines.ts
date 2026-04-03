@@ -30,26 +30,43 @@ const mapPharmacy = (p: any) => ({
   isActive: p.is_active
 });
 
-const mapInventoryItem = (item: any): SearchResult => ({
-  medicineId: item.medicine_id,
-  medicineName: item.medicine?.generic_name || '',
-  brandName: item.medicine?.brand_name,
-  dosage: item.medicine?.dosage,
-  form: item.medicine?.form,
-  category: item.medicine?.category,
-  imageUrl: item.medicine?.image_url,
-  pharmacyId: item.pharmacy_id,
-  pharmacyName: item.pharmacy?.name || '',
-  address: item.pharmacy?.address || '',
-  suburb: item.pharmacy?.suburb,
-  city: item.pharmacy?.city || 'Harare',
-  phone: item.pharmacy?.phone,
-  stockStatus: item.stock_status as any,
-  quantity: item.quantity,
-  price: item.price,
-  lastUpdated: item.last_updated,
-  distance: item.distance || null
-});
+const mapInventoryItem = (item: any): SearchResult => {
+  const result: any = {
+    id: item.medicine_id, // For compatibility with med.id usage
+    medicineId: item.medicine_id,
+    medicineName: item.medicine?.generic_name || '',
+    brandName: item.medicine?.brand_name,
+    dosage: item.medicine?.dosage,
+    form: item.medicine?.form,
+    category: item.medicine?.category,
+    imageUrl: item.medicine?.image_url,
+    pharmacyId: item.pharmacy_id,
+    pharmacyName: item.pharmacy?.name || '',
+    address: item.pharmacy?.address || '',
+    suburb: item.pharmacy?.suburb,
+    city: item.pharmacy?.city || 'Harare',
+    phone: item.pharmacy?.phone,
+    stockStatus: item.stock_status as any,
+    quantity: item.quantity,
+    price: item.price,
+    lastUpdated: item.last_updated,
+    distance: item.distance || null
+  };
+
+  // Add compatibility for components expecting nearestPharmacy structure
+  result.nearestPharmacy = {
+    id: item.pharmacy_id,
+    name: item.pharmacy?.name || '',
+    address: item.pharmacy?.address || '',
+    suburb: item.pharmacy?.suburb,
+    city: item.pharmacy?.city || 'Harare',
+    phone: item.pharmacy?.phone,
+    latitude: item.pharmacy?.latitude,
+    longitude: item.pharmacy?.longitude,
+  };
+
+  return result as SearchResult;
+};
 
 export const medicinesApi = {
   search: async (q: string, lat?: number | null, lng?: number | null, status?: string, page = 1): Promise<SearchResponse> => {
