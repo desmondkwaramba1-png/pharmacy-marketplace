@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { CartResponse } from '../api/cart';
+import { CartResponse } from '../types';
 
 // Mapping helpers to convert Supabase snake_case to Frontend camelCase
 const mapMedicine = (m: any) => m ? ({
@@ -23,6 +23,8 @@ const mapPharmacy = (p: any) => p ? ({
   phone: p.phone,
   latitude: p.latitude,
   longitude: p.longitude,
+  isActive: p.is_active ?? true,
+  logoUrl: p.logo_url,
 }) : null;
 
 const mapCartItem = (item: any) => ({

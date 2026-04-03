@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { cartApi, CartResponse } from '../api/cart';
+import { cartApi } from '../api/cart';
+import { CartResponse } from '../types';
 
 interface CartContextType {
   cart: CartResponse | undefined;
