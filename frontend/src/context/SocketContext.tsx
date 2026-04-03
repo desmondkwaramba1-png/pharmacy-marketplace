@@ -14,31 +14,7 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   useEffect(() => {
     // Supabase Realtime Subscription for inventory changes
-    const channel = supabase
-      .channel('inventory-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'pharmacy_inventory'
-        },
-        (payload) => {
-          console.log('📡 Real-time inventory change:', payload);
-          
-          // Invalidate relevant queries to trigger UI refresh
-          // This ensures stock numbers in search and detail pages update instantly
-          queryClient.invalidateQueries({ queryKey: ['search'] });
-          queryClient.invalidateQueries({ queryKey: ['medicine'] });
-          queryClient.invalidateQueries({ queryKey: ['pharmacies'] });
-          queryClient.invalidateQueries({ queryKey: ['inventory'] });
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('🔌 Connected to Supabase real-time inventory system');
-        }
-      });
+    const channel = supabase.channel('inventory-updates');
 
     // Debounced invalidation to prevent "flickering" during rapid DB changes
     let debounceTimer: any;
@@ -52,8 +28,24 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       }, 500); 
     };
 
-    // Replace the default handler with the debounced one
-    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'pharmacy_inventory' }, invalidate);
+    channel
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pharmacy_inventory'
+        },
+        (payload) => {
+          console.log('📡 Real-time inventory change:', payload);
+          invalidate();
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('🔌 Connected to Supabase real-time inventory system');
+        }
+      });
 
     return () => {
       clearTimeout(debounceTimer);
