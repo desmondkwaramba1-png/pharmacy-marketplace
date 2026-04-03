@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -38,8 +39,6 @@ const getPharmacyIcon = (status?: StockStatus) => {
       justify-content: center;
       font-size: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-      border: 2px solid white;
-      transition: all 0.3s ease;
     ">${emoji}</div>`,
     className: 'pharmacy-marker',
     iconSize: [32, 32],
@@ -65,7 +64,9 @@ const userIcon = L.divIcon({
 
 function MapCenter({ center }: { center: [number, number] }) {
   const map = useMap();
-  map.setView(center, map.getZoom());
+  useEffect(() => {
+    map.setView(center, map.getZoom());
+  }, [center, map]);
   return null;
 }
 
@@ -80,11 +81,13 @@ interface MapComponentProps {
 
 function MapBounds({ bounds }: { bounds: [[number, number], [number, number]] }) {
   const map = useMap();
-  if (bounds) {
-    try {
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
-    } catch (e) {}
-  }
+  useEffect(() => {
+    if (bounds) {
+      try {
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+      } catch (e) {}
+    }
+  }, [bounds, map]);
   return null;
 }
 
@@ -95,7 +98,7 @@ export default function MapComponent({ center, pharmacies, userCoords, onPharmac
         center={center}
         zoom={13}
         className="leaflet-container"
-        style={{ height: 'calc(100dvh - 120px)' }}
+        style={{ height: 'calc(100vh - 120px)', minHeight: '400px' }}
       >
         <TileLayer
           attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

@@ -40,7 +40,23 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         }
       });
 
+    // Debounced invalidation to prevent "flickering" during rapid DB changes
+    let debounceTimer: any;
+    const invalidate = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['search'] });
+        queryClient.invalidateQueries({ queryKey: ['medicine'] });
+        queryClient.invalidateQueries({ queryKey: ['pharmacies'] });
+        queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      }, 500); 
+    };
+
+    // Replace the default handler with the debounced one
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'pharmacy_inventory' }, invalidate);
+
     return () => {
+      clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
   }, [queryClient]);

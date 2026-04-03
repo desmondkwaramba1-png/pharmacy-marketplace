@@ -15,14 +15,12 @@ const LoginPage = lazy(() => import('./pages/patient/LoginPage'));
 
 function PatientLayout({ children }: { children: React.ReactNode }) {
   return (
-    <CartProvider>
-      <div className="app-shell">
-        <OfflineBanner />
-        {children}
-        <BottomNav />
-        <CartDrawer />
-      </div>
-    </CartProvider>
+    <div className="app-shell">
+      <OfflineBanner />
+      {children}
+      <BottomNav />
+      <CartDrawer />
+    </div>
   );
 }
 
@@ -37,20 +35,22 @@ const Loading = () => (
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Suspense fallback={<Loading />}>
-        <Routes>
-          {/* Patient routes */}
-          <Route path="/" element={<PatientLayout><HomePage /></PatientLayout>} />
-          <Route path="/search" element={<PatientLayout><SearchResultsPage /></PatientLayout>} />
-          <Route path="/medicine/:id" element={<PatientLayout><MedicineDetailPage /></PatientLayout>} />
-          <Route path="/map" element={<PatientLayout><MapViewPage /></PatientLayout>} />
+    <CartProvider>
+      <BrowserRouter>
+        <Suspense fallback={<Loading />}>
+          <Routes>
+            {/* Patient routes */}
+            <Route path="/" element={<PatientLayout><HomePage /></PatientLayout>} />
+            <Route path="/search" element={<PatientLayout><SearchResultsPage /></PatientLayout>} />
+            <Route path="/medicine/:id" element={<PatientLayout><MedicineDetailPage /></PatientLayout>} />
+            <Route path="/map" element={<PatientLayout><MapViewPage /></PatientLayout>} />
 
-          <Route path="/login" element={<PatientLayout><LoginPage /></PatientLayout>} />
+            <Route path="/login" element={<PatientLayout><LoginPage /></PatientLayout>} />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
-    </BrowserRouter>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </CartProvider>
   );
 }
