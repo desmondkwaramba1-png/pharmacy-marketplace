@@ -27,28 +27,6 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https?:\/\/localhost:3000\/api\/medicines\/popular/,
-            handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'popular-medicines', expiration: { maxAgeSeconds: 60 * 60 } },
-          },
-          {
-            urlPattern: /^https?:\/\/localhost:3000\/api\/medicines\/search/,
-            handler: 'NetworkFirst',
-            options: { cacheName: 'search-results', expiration: { maxAgeSeconds: 5 * 60 } },
-          },
-          {
-            urlPattern: /^https?:\/\/localhost:3000\/api\/pharmacies/,
-            handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'pharmacies', expiration: { maxAgeSeconds: 15 * 60 } },
-          },
-          {
-            urlPattern: /^https:\/\/tile\.openstreetmap\.org\/.*/i,
-            handler: 'CacheFirst',
-            options: { cacheName: 'map-tiles', expiration: { maxEntries: 200, maxAgeSeconds: 7 * 24 * 60 * 60 } },
-          },
-        ],
       },
     }),
   ],
