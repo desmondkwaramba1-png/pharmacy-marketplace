@@ -35,12 +35,15 @@ export default function DashboardPage() {
   return (
     <div className="page">
       <div className="page-content" style={{ paddingTop: 12 }}>
-        {/* Welcome */}
-        <div className="admin-welcome">
-          <div className="admin-welcome-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            Welcome, {user?.firstName || user?.email?.split('@')[0]}! <FaHandSparkles color="#FCD34D" />
+        {/* Welcome & Pharmacy Name */}
+        <div className="admin-welcome" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+          <div>
+            <div className="admin-welcome-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              Welcome, {user?.firstName || user?.email?.split('@')[0]}! <FaHandSparkles color="#FCD34D" />
+            </div>
+            <div className="admin-welcome-sub">Managing: <strong style={{ color: 'var(--color-primary)' }}>{user?.pharmacy?.name || 'Assigned Pharmacy'}</strong></div>
           </div>
-          <div className="admin-welcome-sub">Last updated: {now}</div>
+          <div className="admin-welcome-sub" style={{ fontSize: 11, textAlign: 'right' }}>{now}</div>
         </div>
 
         {/* Stats grid */}
