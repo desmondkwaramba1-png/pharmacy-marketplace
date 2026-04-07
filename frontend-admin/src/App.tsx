@@ -3,11 +3,13 @@ import { Suspense, lazy } from 'react';
 import { useAuth } from './context/AuthContext';
 import OfflineBanner from './components/OfflineBanner';
 import AdminNav from './components/AdminNav';
+import { Toaster } from 'react-hot-toast';
 
 // Lazy load all pages for code splitting
 const LoginPage = lazy(() => import('./pages/pharmacy/LoginPage'));
 const DashboardPage = lazy(() => import('./pages/pharmacy/DashboardPage'));
 const InventoryPage = lazy(() => import('./pages/pharmacy/InventoryPage'));
+const PickupPortalPage = lazy(() => import('./pages/pharmacy/PickupPortalPage'));
 const ProfilePage = lazy(() => import('./pages/pharmacy/ProfilePage'));
 
 
@@ -51,6 +53,9 @@ export default function App() {
           <Route path="/admin/inventory" element={
             <ProtectedRoute><AdminLayout><InventoryPage /></AdminLayout></ProtectedRoute>
           } />
+          <Route path="/admin/pickups" element={
+            <ProtectedRoute><AdminLayout><PickupPortalPage /></AdminLayout></ProtectedRoute>
+          } />
           <Route path="/admin/profile" element={
             <ProtectedRoute><AdminLayout><ProfilePage /></AdminLayout></ProtectedRoute>
           } />
@@ -59,6 +64,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </Routes>
       </Suspense>
+      <Toaster position="top-center" />
     </BrowserRouter>
   );
 }

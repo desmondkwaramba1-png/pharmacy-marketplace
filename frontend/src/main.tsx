@@ -7,8 +7,9 @@ import { AuthProvider } from './context/AuthContext.tsx';
 import { SocketProvider } from './context/SocketContext.tsx';
 
 // Register PWA service worker
+import { registerSW } from 'virtual:pwa-register';
 if ('serviceWorker' in navigator) {
-  import('virtual:pwa-register');
+  registerSW({ immediate: true });
 }
 
 const queryClient = new QueryClient({

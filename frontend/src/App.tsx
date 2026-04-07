@@ -7,12 +7,15 @@ import BottomNav from './components/BottomNav';
 import CartDrawer from './components/CartDrawer';
 import { CartProvider } from './context/CartContext';
 
+import { Toaster } from 'react-hot-toast';
+
 // Lazy load all pages for code splitting
 const HomePage = lazy(() => import('./pages/patient/HomePage'));
 const SearchResultsPage = lazy(() => import('./pages/patient/SearchResultsPage'));
 const MedicineDetailPage = lazy(() => import('./pages/patient/MedicineDetailPage'));
 const MapViewPage = lazy(() => import('./pages/patient/MapViewPage'));
 const LoginPage = lazy(() => import('./pages/patient/LoginPage'));
+const MyReservationsPage = lazy(() => import('./pages/patient/MyReservationsPage'));
 
 function PatientLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -25,8 +28,6 @@ function PatientLayout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-
-
 
 const Loading = () => (
   <div className="empty-state" style={{ minHeight: '60vh' }}>
@@ -47,6 +48,7 @@ export default function App() {
               <Route path="/search" element={<SearchResultsPage />} />
               <Route path="/medicine/:id" element={<MedicineDetailPage />} />
               <Route path="/map" element={<MapViewPage />} />
+              <Route path="/reservations" element={<MyReservationsPage />} />
 
               <Route path="/login" element={<LoginPage />} />
 
@@ -54,6 +56,7 @@ export default function App() {
             </Routes>
           </Suspense>
         </PatientLayout>
+        <Toaster position="top-center" />
       </BrowserRouter>
     </CartProvider>
   );

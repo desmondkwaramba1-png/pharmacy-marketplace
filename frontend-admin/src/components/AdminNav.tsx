@@ -1,10 +1,11 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiHome, FiBox, FiLogOut } from 'react-icons/fi';
+import { FiHome, FiBox, FiLogOut, FiShoppingBag } from 'react-icons/fi';
 import { FaClinicMedical, FaPills } from 'react-icons/fa';
 
 const tabs = [
-  { to: '/admin/dashboard', label: 'Dashboard', icon: <FiHome size={22} /> },
+  { to: '/admin/dashboard', label: 'Home', icon: <FiHome size={22} /> },
+  { to: '/admin/pickups', label: 'Pickups', icon: <FiShoppingBag size={22} /> },
   { to: '/admin/inventory', label: 'Inventory', icon: <FiBox size={22} /> },
   { to: '/admin/profile', label: 'Pharmacy', icon: <FaClinicMedical size={22} /> },
 ];

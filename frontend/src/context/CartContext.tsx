@@ -8,7 +8,7 @@ interface CartContextType {
   isLoading: boolean;
   addToCart: (pharmacyId: string, medicineId: string, quantity?: number) => void;
   removeFromCart: (cartItemId: string) => void;
-  checkout: () => Promise<{ message: string; bookingRef: string }>;
+  checkout: (pharmacyId: string) => Promise<{ message: string; bookingRef: string; orderId: string; expiresAt: string }>;
   isCartOpen: boolean;
   setCartOpen: (open: boolean) => void;
 }
@@ -54,16 +54,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
   });
 
   const checkoutMutation = useMutation({
-    mutationFn: () => cartApi.checkout(),
+    mutationFn: (pharmacyId: string) => cartApi.checkout(pharmacyId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['patient-cart'] });
       queryClient.invalidateQueries({ queryKey: ['search'] });
+      queryClient.invalidateQueries({ queryKey: ['my-reservations'] });
     },
   });
 
   const addToCart = (pId: string, mId: string, qty = 1) => addMutation.mutate({ pId, mId, qty });
   const removeFromCart = (cartItemId: string) => removeMutation.mutate(cartItemId);
-  const checkout = async () => await checkoutMutation.mutateAsync();
+  const checkout = async (pharmacyId: string) => await checkoutMutation.mutateAsync(pharmacyId);
 
   // Memoize context value to prevent full-app re-renders every 10s during polling
   const value = useMemo(() => ({ 

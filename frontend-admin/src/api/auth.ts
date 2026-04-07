@@ -59,7 +59,6 @@ export const adminApi = {
     }
 
     if (params?.q) {
-      // Note: This is a complex join filter, Supabase might need a separate medicine search first
       const { data: medData } = await supabase
         .from('medicines')
         .select('id')
@@ -72,7 +71,6 @@ export const adminApi = {
     const { data, error, count } = await query.order('last_updated', { ascending: false });
     if (error) throw error;
 
-    // 2. Fetch stats (simplified for local calculation)
     const statsQuery = await supabase
       .from('pharmacy_inventory')
       .select('stock_status')
@@ -121,7 +119,6 @@ export const adminApi = {
 
   updateInventory: async (medicineId: string, payload: { stockStatus: string; quantity?: number; price?: number }): Promise<InventoryItem> => {
     const pharmacyId = await getMyPharmacyId();
-    
     const { data: { user } } = await supabase.auth.getUser();
 
     const { data, error } = await supabase
@@ -142,15 +139,13 @@ export const adminApi = {
       .single();
 
     if (error) throw error;
-    return data as any; // Map if needed, but keeping it agile
+    return data as any;
   },
 
   addMedicine: async (payload: any): Promise<InventoryItem> => {
     const pharmacyId = await getMyPharmacyId();
     const { data: { user } } = await supabase.auth.getUser();
 
-    // 1. Create or find medicine
-    // We try to find by name/dosage first to avoid duplicates in the global catalog
     let medicineId = '';
     const { data: existingMed } = await supabase
       .from('medicines')
@@ -180,7 +175,6 @@ export const adminApi = {
       medicineId = newMed.id;
     }
 
-    // 2. Add to inventory
     const { data: invItem, error: invErr } = await supabase
       .from('pharmacy_inventory')
       .insert([{
@@ -202,7 +196,6 @@ export const adminApi = {
   },
 
   uploadImage: async (file: File): Promise<{ imageUrl: string }> => {
-    // Note: User needs to create 'medicine-images' public bucket in Supabase
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExt}`;
     const filePath = `uploads/${fileName}`;
@@ -239,7 +232,6 @@ export const adminApi = {
       .single();
     if (error) throw error;
     
-    // Map snake_case to camelCase
     return {
       id: data.id,
       name: data.name,
@@ -299,9 +291,34 @@ export const adminApi = {
       inStock: metrics.inStock,
       lowStock: metrics.lowStock,
       outOfStock: metrics.outOfStock,
-      weeklySearches: 0, // Placeholder
-      directionRequests: 0, // Placeholder
-      avgRating: 5.0, // Placeholder
+      weeklySearches: 0, 
+      directionRequests: 0,
+      avgRating: 5.0,
     };
   },
+
+  getOrder: async (bookingRef: string) => {
+    const pharmacyId = await getMyPharmacyId();
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        items:order_items(
+          *,
+          medicine:medicines(*)
+        )
+      `)
+      .eq('booking_ref', bookingRef.toUpperCase())
+      .eq('pharmacy_id', pharmacyId)
+      .single();
+
+    if (error) throw new Error('Booking not found for this pharmacy.');
+    return data;
+  },
+
+  collectOrder: async (bookingRef: string) => {
+    const { error } = await supabase.rpc('collect_order', { p_booking_ref: bookingRef.toUpperCase() });
+    if (error) throw error;
+    return true;
+  }
 };

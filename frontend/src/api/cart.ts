@@ -214,29 +214,88 @@ export const cartApi = {
     return cartApi.getCart();
   },
 
-  checkout: async (): Promise<{ message: string; bookingRef: string }> => {
+  checkout: async (pharmacyId: string): Promise<{ message: string; bookingRef: string; orderId: string; expiresAt: string }> => {
+    const { data: { user } } = await supabase.auth.getUser();
     const cartId = await getOrCreateCartId();
     const bookingRef = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 Min Window
 
-    const { data: items } = await supabase
+    // 1. Get current cart items for this pharmacy
+    const { data: cartItems } = await supabase
       .from('cart_items')
-      .select('*')
+      .select(`
+        *,
+        medicine:medicines(standard_price)
+      `)
       .eq('cart_id', cartId)
+      .eq('pharmacy_id', pharmacyId)
       .eq('status', 'reserved');
 
-    if (!items || items.length === 0) throw new Error('Cart is empty');
+    if (!cartItems || cartItems.length === 0) throw new Error('Cart is empty for this pharmacy');
 
-    for (const item of items) {
-      await supabase.from('cart_items').update({ status: 'checked_out' }).eq('id', item.id);
+    const total = cartItems.reduce((sum, item) => sum + (Number(item.medicine.standard_price || 0) * item.quantity), 0);
 
-      await supabase.rpc('checkout_inventory', {
-        p_pharmacy_id: item.pharmacy_id,
-        p_medicine_id: item.medicine_id,
-        p_qty: item.quantity
-      });
-    }
+    // 2. Create the Order
+    const { data: order, error: orderErr } = await supabase
+      .from('orders')
+      .insert([{
+        booking_ref: bookingRef,
+        user_id: user?.id,
+        pharmacy_id: pharmacyId,
+        total_amount: total,
+        status: 'pending',
+        expires_at: expiresAt
+      }])
+      .select()
+      .single();
 
-    return { message: 'Checkout successful', bookingRef };
+    if (orderErr) throw orderErr;
+
+    // 3. Create Order Items
+    const itemsToInsert = cartItems.map(ci => ({
+      order_id: order.id,
+      medicine_id: ci.medicine_id,
+      quantity: ci.quantity,
+      price_at_booking: ci.medicine.standard_price || 0
+    }));
+
+    await supabase.from('order_items').insert(itemsToInsert);
+
+    // 4. Mark cart items as checked_out so they leave the active cart
+    await supabase
+      .from('cart_items')
+      .update({ status: 'checked_out' })
+      .eq('cart_id', cartId)
+      .eq('pharmacy_id', pharmacyId);
+
+    return { message: 'Reservation confirmed', bookingRef, orderId: order.id, expiresAt };
+  },
+
+  getOrders: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        pharmacy:pharmacies(name, address),
+        items:order_items(
+          *,
+          medicine:medicines(*)
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
+  collectOrder: async (bookingRef: string) => {
+    const { error } = await supabase.rpc('collect_order', { p_booking_ref: bookingRef });
+    if (error) throw error;
+    return true;
   },
 
   getHistory: async () => {
