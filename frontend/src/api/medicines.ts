@@ -15,37 +15,25 @@ const mapMedicine = (m: any) => ({
   updatedAt: m.updated_at
 });
 
-const mapPharmacy = (p: any) => ({
-  id: p.id,
-  name: p.name,
-  address: p.address,
-  suburb: p.suburb,
-  city: p.city,
-  latitude: p.latitude,
-  longitude: p.longitude,
-  phone: p.phone,
-  email: p.email,
-  operatingHours: p.operating_hours ? JSON.parse(p.operating_hours) : null,
-  logoUrl: p.logo_url,
-  isActive: p.is_active
-});
-
 const mapInventoryItem = (item: any): SearchResult => {
+  const p = item.pharmacy as any;
+  const m = item.medicine as any;
+
   const result: any = {
-    id: item.medicine_id, // For compatibility with med.id usage
+    id: item.medicine_id,
     medicineId: item.medicine_id,
-    medicineName: item.medicine?.generic_name || '',
-    brandName: item.medicine?.brand_name,
-    dosage: item.medicine?.dosage,
-    form: item.medicine?.form,
-    category: item.medicine?.category,
-    imageUrl: item.medicine?.image_url,
+    medicineName: m?.generic_name || '',
+    brandName: m?.brand_name,
+    dosage: m?.dosage,
+    form: m?.form,
+    category: m?.category,
+    imageUrl: m?.image_url,
     pharmacyId: item.pharmacy_id,
-    pharmacyName: item.pharmacy?.name || '',
-    address: item.pharmacy?.address || '',
-    suburb: item.pharmacy?.suburb,
-    city: item.pharmacy?.city || 'Harare',
-    phone: item.pharmacy?.phone,
+    pharmacyName: p?.name || '',
+    address: p?.address || '',
+    suburb: p?.suburb,
+    city: p?.city || 'Harare',
+    phone: p?.phone,
     stockStatus: item.stock_status as any,
     quantity: item.quantity,
     price: item.price,
@@ -53,16 +41,15 @@ const mapInventoryItem = (item: any): SearchResult => {
     distance: item.distance || null
   };
 
-  // Add compatibility for components expecting nearestPharmacy structure
   result.nearestPharmacy = {
     id: item.pharmacy_id,
-    name: item.pharmacy?.name || '',
-    address: item.pharmacy?.address || '',
-    suburb: item.pharmacy?.suburb,
-    city: item.pharmacy?.city || 'Harare',
-    phone: item.pharmacy?.phone,
-    latitude: item.pharmacy?.latitude,
-    longitude: item.pharmacy?.longitude,
+    name: p?.name || '',
+    address: p?.address || '',
+    suburb: p?.suburb,
+    city: p?.city || 'Harare',
+    phone: p?.phone,
+    latitude: p?.latitude,
+    longitude: p?.longitude,
   };
 
   return result as SearchResult;
@@ -70,8 +57,7 @@ const mapInventoryItem = (item: any): SearchResult => {
 
 export const medicinesApi = {
   search: async (q: string, lat?: number | null, lng?: number | null, status?: string, page = 1): Promise<SearchResponse> => {
-    // 1. Get base medicine IDs matching search
-    let medicineQuery = supabase.from('medicines').select('id');
+    let medicineQuery = supabase.from('medicines').select('id, generic_name, brand_name');
     if (q) {
       medicineQuery = medicineQuery.or(`generic_name.ilike.%${q}%,brand_name.ilike.%${q}%`);
     }
@@ -80,13 +66,12 @@ export const medicinesApi = {
 
     if (medIds.length === 0) return { results: [], total: 0, page: 1, limit: 20, query: q };
 
-    // 2. Query inventory for these medicines with pruned columns for low bandwidth
     let invQuery = supabase
       .from('pharmacy_inventory')
       .select(`
         id, pharmacy_id, medicine_id, stock_status, quantity, price, last_updated,
-        medicine:medicines(id, generic_name, brand_name, dosage, form, category, image_url),
-        pharmacy:pharmacies(id, name, address, suburb, city, phone, latitude, longitude)
+        medicine:medicines!inner(id, generic_name, brand_name, dosage, form, category, image_url),
+        pharmacy:pharmacies!inner(id, name, address, suburb, city, phone, latitude, longitude)
       `)
       .in('medicine_id', medIds);
 
@@ -97,16 +82,16 @@ export const medicinesApi = {
     const { data: results, error } = await invQuery;
     if (error) throw error;
 
-    // 3. Client-side ranking/sorting by distance
-    let processedResults = (results || []).map(item => {
+    // Client-side ranking/sorting by distance using cast to any
+    let processedResults = (results || []).map((item: any) => {
       let distance = null;
-      if (lat != null && lng != null && item.pharmacy?.latitude && item.pharmacy?.longitude) {
-        // Haversine formula
-        const R = 6371; // km
-        const dLat = (item.pharmacy.latitude - lat) * Math.PI / 180;
-        const dLon = (item.pharmacy.longitude - lng) * Math.PI / 180;
+      const p = item.pharmacy as any;
+      if (lat != null && lng != null && p?.latitude && p?.longitude) {
+        const R = 6371;
+        const dLat = (p.latitude - lat) * Math.PI / 180;
+        const dLon = (p.longitude - lng) * Math.PI / 180;
         const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                  Math.cos(lat * Math.PI / 180) * Math.cos(item.pharmacy.latitude * Math.PI / 180) *
+                  Math.cos(lat * Math.PI / 180) * Math.cos(p.latitude * Math.PI / 180) *
                   Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         distance = R * c;
@@ -131,47 +116,45 @@ export const medicinesApi = {
   },
 
   getById: async (id: string, lat?: number | null, lng?: number | null): Promise<MedicineDetail> => {
-    // 1. Get medicine info
     const { data: medicine, error: mErr } = await supabase
       .from('medicines')
       .select('*')
       .eq('id', id)
       .single();
-    
+
     if (mErr) throw mErr;
 
-    // 2. Get availability with pruned columns
     const { data: availability, error: aErr } = await supabase
       .from('pharmacy_inventory')
       .select(`
         id, pharmacy_id, medicine_id, stock_status, quantity, price, last_updated,
-        pharmacy:pharmacies(id, name, address, suburb, phone, latitude, longitude)
+        pharmacy:pharmacies!inner(id, name, address, suburb, phone, latitude, longitude)
       `)
       .eq('medicine_id', id);
 
     if (aErr) throw aErr;
 
-    // 3. Calculate distances
-    const enrichedAvailability = (availability || []).map(item => {
+    const enrichedAvailability = (availability || []).map((item: any) => {
       let distance = null;
-      if (lat != null && lng != null && item.pharmacy?.latitude && item.pharmacy?.longitude) {
+      const p = item.pharmacy as any;
+      if (lat != null && lng != null && p?.latitude && p?.longitude) {
         const R = 6371;
-        const dLat = (item.pharmacy.latitude - lat) * Math.PI / 180;
-        const dLon = (item.pharmacy.longitude - lng) * Math.PI / 180;
+        const dLat = (p.latitude - lat) * Math.PI / 180;
+        const dLon = (p.longitude - lng) * Math.PI / 180;
         const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                  Math.cos(lat * Math.PI / 180) * Math.cos(item.pharmacy.latitude * Math.PI / 180) *
+                  Math.cos(lat * Math.PI / 180) * Math.cos(p.latitude * Math.PI / 180) *
                   Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         distance = R * c;
       }
       return {
         pharmacyId: item.pharmacy_id,
-        pharmacyName: item.pharmacy?.name || '',
-        address: item.pharmacy?.address || '',
-        suburb: item.pharmacy?.suburb,
-        phone: item.pharmacy?.phone,
-        latitude: item.pharmacy?.latitude || 0,
-        longitude: item.pharmacy?.longitude || 0,
+        pharmacyName: p?.name || '',
+        address: p?.address || '',
+        suburb: p?.suburb,
+        phone: p?.phone,
+        latitude: p?.latitude || 0,
+        longitude: p?.longitude || 0,
         stockStatus: item.stock_status as any,
         quantity: item.quantity,
         price: item.price,
@@ -191,16 +174,15 @@ export const medicinesApi = {
       .from('pharmacy_inventory')
       .select(`
         id, pharmacy_id, medicine_id, stock_status, quantity, price, last_updated,
-        medicine:medicines(id, generic_name, brand_name, dosage, form, category, image_url),
-        pharmacy:pharmacies(id, name, address, suburb, city, phone, latitude, longitude)
+        medicine:medicines!inner(id, generic_name, brand_name, dosage, form, category, image_url),
+        pharmacy:pharmacies!inner(id, name, address, suburb, city, phone, latitude, longitude)
       `)
       .limit(6);
-    
+
     if (error) throw error;
-    return (data || []).map(item => ({
+    return (data || []).map((item: any) => ({
       ...mapInventoryItem(item),
       distance: null
     }));
   }
 };
-
