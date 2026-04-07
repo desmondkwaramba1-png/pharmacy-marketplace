@@ -44,6 +44,28 @@ const mapCartItem = (item: any) => ({
   isExpired: item.isExpired || false
 });
 
+const mapOrderItem = (item: any): any => ({
+  id: item.id,
+  orderId: item.order_id,
+  medicineId: item.medicine_id,
+  quantity: item.quantity,
+  priceAtBooking: item.price_at_booking,
+  medicine: mapMedicine(single(item.medicine))
+});
+
+const mapOrder = (order: any): any => ({
+  id: order.id,
+  bookingRef: order.booking_ref,
+  userId: order.user_id,
+  pharmacyId: order.pharmacy_id,
+  totalAmount: Number(order.total_amount),
+  status: order.status,
+  createdAt: order.created_at,
+  expiresAt: order.expires_at,
+  pharmacy: mapPharmacy(single(order.pharmacy)),
+  items: (order.items || []).map(mapOrderItem)
+});
+
 // Helper to get or create a cart ID for the user/session
 async function getOrCreateCartId(): Promise<string> {
   const { data: { user } } = await supabase.auth.getUser();
@@ -289,7 +311,7 @@ export const cartApi = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+    return (data || []).map(mapOrder);
   },
 
   collectOrder: async (bookingRef: string) => {

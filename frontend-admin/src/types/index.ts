@@ -136,3 +136,25 @@ export interface CartResponse {
   itemCount: number;
 }
 
+export interface Order {
+  id: string;
+  bookingRef: string;
+  userId?: string;
+  pharmacyId: string;
+  totalAmount: number;
+  status: 'pending' | 'collected' | 'expired' | 'cancelled';
+  createdAt: string;
+  expiresAt: string;
+  pharmacy?: Pharmacy;
+  items?: OrderItem[];
+}
+
+export interface OrderItem {
+  id: string;
+  orderId: string;
+  medicineId: string;
+  quantity: number;
+  priceAtBooking: number;
+  medicine?: Medicine;
+}
+

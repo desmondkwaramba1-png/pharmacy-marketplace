@@ -10,6 +10,39 @@ async function getMyPharmacyId(): Promise<string> {
   return pharmacyId;
 }
 
+const mapMedicine = (m: any): any => m ? ({
+  id: m.id,
+  genericName: m.generic_name,
+  brandName: m.brand_name,
+  dosage: m.dosage,
+  form: m.form,
+  category: m.category,
+  description: m.description,
+  standardPrice: m.standard_price,
+  imageUrl: m.image_url,
+}) : null;
+
+const mapOrderItem = (item: any): any => ({
+  id: item.id,
+  orderId: item.order_id,
+  medicineId: item.medicine_id,
+  quantity: item.quantity,
+  priceAtBooking: item.price_at_booking,
+  medicine: mapMedicine(item.medicine)
+});
+
+const mapOrder = (order: any): any => ({
+  id: order.id,
+  bookingRef: order.booking_ref,
+  userId: order.user_id,
+  pharmacyId: order.pharmacy_id,
+  totalAmount: Number(order.total_amount),
+  status: order.status,
+  createdAt: order.created_at,
+  expiresAt: order.expires_at,
+  items: (order.items || []).map(mapOrderItem)
+});
+
 export const authApi = {
   login: async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -313,7 +346,7 @@ export const adminApi = {
       .single();
 
     if (error) throw new Error('Booking not found for this pharmacy.');
-    return data;
+    return mapOrder(data);
   },
 
   collectOrder: async (bookingRef: string) => {
