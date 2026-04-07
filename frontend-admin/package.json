@@ -12,6 +12,7 @@
     "@supabase/supabase-js": "^2.101.1",
     "@tanstack/react-query": "^5.25.0",
     "@tanstack/react-query-devtools": "^5.25.0",
+    "@vitejs/plugin-react": "^4.2.1",
     "axios": "^1.6.7",
     "leaflet": "^1.9.4",
     "react": "^18.2.0",
@@ -20,6 +21,7 @@
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.22.3",
     "socket.io-client": "^4.8.3",
+    "vite": "^5.1.6",
     "workbox-core": "^7.4.0",
     "workbox-routing": "^7.4.0",
     "workbox-strategies": "^7.4.0"
@@ -28,10 +30,8 @@
     "@types/leaflet": "^1.9.8",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
-    "@vitejs/plugin-react": "^4.2.1",
     "semver": "^7.7.4",
     "typescript": "^5.4.2",
-    "vite": "^5.1.6",
     "vite-plugin-pwa": "^1.2.0",
     "workbox-build": "^7.4.0",
     "workbox-window": "^7.4.0"
