@@ -34,8 +34,10 @@ const mapInventoryItem = (item: any): SearchResult => {
     suburb: p?.suburb,
     city: p?.city || 'Harare',
     phone: p?.phone,
-    stockStatus: item.stock_status as any,
+    stockStatus: (item.quantity - (item.reserved_quantity || 0)) <= 0 ? 'out_of_stock' : item.stock_status as any,
     quantity: item.quantity,
+    reservedQuantity: item.reserved_quantity || 0,
+    availableQuantity: Math.max(0, item.quantity - (item.reserved_quantity || 0)),
     price: item.price,
     lastUpdated: item.last_updated,
     distance: item.distance || null
@@ -69,7 +71,7 @@ export const medicinesApi = {
     let invQuery = supabase
       .from('pharmacy_inventory')
       .select(`
-        id, pharmacy_id, medicine_id, stock_status, quantity, price, last_updated,
+        id, pharmacy_id, medicine_id, stock_status, quantity, reserved_quantity, price, last_updated,
         medicine:medicines!inner(id, generic_name, brand_name, dosage, form, category, image_url),
         pharmacy:pharmacies!inner(id, name, address, suburb, city, phone, latitude, longitude)
       `)
@@ -127,7 +129,7 @@ export const medicinesApi = {
     const { data: availability, error: aErr } = await supabase
       .from('pharmacy_inventory')
       .select(`
-        id, pharmacy_id, medicine_id, stock_status, quantity, price, last_updated,
+        id, pharmacy_id, medicine_id, stock_status, quantity, reserved_quantity, price, last_updated,
         pharmacy:pharmacies!inner(id, name, address, suburb, phone, latitude, longitude)
       `)
       .eq('medicine_id', id);
@@ -155,8 +157,9 @@ export const medicinesApi = {
         phone: p?.phone,
         latitude: p?.latitude || 0,
         longitude: p?.longitude || 0,
-        stockStatus: item.stock_status as any,
+        stockStatus: (item.quantity - (item.reserved_quantity || 0)) <= 0 ? 'out_of_stock' : item.stock_status as any,
         quantity: item.quantity,
+        availableQuantity: Math.max(0, item.quantity - (item.reserved_quantity || 0)),
         price: item.price,
         lastUpdated: item.last_updated,
         distance
@@ -173,7 +176,7 @@ export const medicinesApi = {
     const { data, error } = await supabase
       .from('pharmacy_inventory')
       .select(`
-        id, pharmacy_id, medicine_id, stock_status, quantity, price, last_updated,
+        id, pharmacy_id, medicine_id, stock_status, quantity, reserved_quantity, price, last_updated,
         medicine:medicines!inner(id, generic_name, brand_name, dosage, form, category, image_url),
         pharmacy:pharmacies!inner(id, name, address, suburb, city, phone, latitude, longitude)
       `)

@@ -19,6 +19,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [isCartOpen, setCartOpen] = useState(false);
 
+  // Run cleanup once on app load to return expired reservations back to inventory
+  useEffect(() => {
+    cartApi.cleanupExpired().catch(console.error);
+  }, []);
+
   // Poll the cart every 10 seconds to update 'remainingSeconds' and 'isExpired' automatically
   const { data: cart, isLoading } = useQuery({
     queryKey: ['patient-cart'],

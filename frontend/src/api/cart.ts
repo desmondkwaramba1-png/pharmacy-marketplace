@@ -259,5 +259,9 @@ export const cartApi = {
 
     if (error) throw error;
     return { items: (items || []).map(mapCartItem) };
+  },
+
+  cleanupExpired: async (): Promise<void> => {
+    await supabase.rpc('cleanup_expired_reservations');
   }
 };
