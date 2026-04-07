@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { medicinesApi } from '../../api/medicines';
@@ -46,34 +46,6 @@ export default function HomePage() {
     if (e.key === 'Enter') handleSearch(query);
   };
 
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  
-  useEffect(() => {
-    const handleBeforeInstall = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
-  }, []);
-
-  const triggerInstall = async () => {
-    // If the browser provided the native install prompt (Android/Chrome)
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') setDeferredPrompt(null);
-      return;
-    }
-
-    // Fallback for iOS/Safari which disables the native prompt
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    if (isIOS) {
-      alert("To install on iOS: \n1. Tap the Share button at the bottom of Safari.\n2. Scroll down and tap 'Add to Home Screen'.");
-    } else {
-      alert("Your browser doesn't support automatic installation. Please look for the 'Install' or 'Add to Home Screen' option in your browser menu!");
-    }
-  };
 
   return (
     <div className="page">
@@ -154,20 +126,6 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* Install Prominently */}
-        <div style={{ marginTop: 20, background: 'linear-gradient(135deg, var(--color-primary), #026a78)', padding: 16, borderRadius: 16, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 4px 12px rgba(2, 128, 144, 0.3)' }}>
-          <div>
-            <div style={{ fontWeight: 600, fontSize: 16 }}>Install MediFind</div>
-            <div style={{ fontSize: 13, opacity: 0.9, marginTop: 4 }}>Fast, offline medicine search!</div>
-          </div>
-          <button 
-            className="btn btn-sm"
-            onClick={triggerInstall}
-            style={{ background: 'white', color: 'var(--color-primary)', fontWeight: 700, borderRadius: 20, border: 'none', padding: '8px 16px', cursor: 'pointer' }}
-          >
-            Get App
-          </button>
-        </div>
 
         {/* Recent searches */}
         {recent.length > 0 && (
