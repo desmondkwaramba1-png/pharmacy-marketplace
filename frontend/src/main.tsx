@@ -6,6 +6,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext.tsx';
 import { SocketProvider } from './context/SocketContext.tsx';
 
+// Register PWA service worker
+if ('serviceWorker' in navigator) {
+  import('virtual:pwa-register');
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

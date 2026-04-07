@@ -105,3 +105,36 @@ CREATE POLICY "Carts open to all for now" ON carts USING (true);
 
 ALTER TABLE cart_items ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Cart items open to all for now" ON cart_items USING (true);
+
+-- RPC FUNCTIONS FOR SECURE CHECKOUT / CART MANAGEMENT
+-- These functions run with SECURITY DEFINER to bypass RLS policies
+-- that normally prevent patients from updating inventory quantities.
+
+CREATE OR REPLACE FUNCTION increment_reserved_quantity(p_pharmacy_id UUID, p_medicine_id UUID, p_qty INTEGER)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE pharmacy_inventory 
+  SET reserved_quantity = reserved_quantity + p_qty 
+  WHERE pharmacy_id = p_pharmacy_id AND medicine_id = p_medicine_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION release_reserved_quantity(p_pharmacy_id UUID, p_medicine_id UUID, p_qty INTEGER)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE pharmacy_inventory 
+  SET reserved_quantity = GREATEST(0, reserved_quantity - p_qty) 
+  WHERE pharmacy_id = p_pharmacy_id AND medicine_id = p_medicine_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION checkout_inventory(p_pharmacy_id UUID, p_medicine_id UUID, p_qty INTEGER)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE pharmacy_inventory 
+  SET 
+    quantity = GREATEST(0, quantity - p_qty),
+    reserved_quantity = GREATEST(0, reserved_quantity - p_qty)
+  WHERE pharmacy_id = p_pharmacy_id AND medicine_id = p_medicine_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

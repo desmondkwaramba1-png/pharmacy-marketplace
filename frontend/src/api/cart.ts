@@ -167,18 +167,11 @@ export const cartApi = {
         }]);
     }
 
-    const { data: inv } = await supabase
-      .from('pharmacy_inventory')
-      .select('reserved_quantity')
-      .eq('pharmacy_id', pId)
-      .eq('medicine_id', mId)
-      .maybeSingle();
-
-    await supabase
-      .from('pharmacy_inventory')
-      .update({ reserved_quantity: (inv?.reserved_quantity || 0) + qty })
-      .eq('pharmacy_id', pId)
-      .eq('medicine_id', mId);
+    await supabase.rpc('increment_reserved_quantity', {
+      p_pharmacy_id: pId,
+      p_medicine_id: mId,
+      p_qty: qty
+    });
 
     return cartApi.getCart();
   },
@@ -191,18 +184,11 @@ export const cartApi = {
       .single();
 
     if (item && item.status === 'reserved') {
-      const { data: inv } = await supabase
-        .from('pharmacy_inventory')
-        .select('reserved_quantity')
-        .eq('pharmacy_id', item.pharmacy_id)
-        .eq('medicine_id', item.medicine_id)
-        .single();
-
-      await supabase
-        .from('pharmacy_inventory')
-        .update({ reserved_quantity: Math.max(0, (inv?.reserved_quantity || 0) - item.quantity) })
-        .eq('pharmacy_id', item.pharmacy_id)
-        .eq('medicine_id', item.medicine_id);
+      await supabase.rpc('release_reserved_quantity', {
+        p_pharmacy_id: item.pharmacy_id,
+        p_medicine_id: item.medicine_id,
+        p_qty: item.quantity
+      });
     }
 
     await supabase.from('cart_items').delete().eq('id', cartItemId);
@@ -224,21 +210,11 @@ export const cartApi = {
     for (const item of items) {
       await supabase.from('cart_items').update({ status: 'checked_out' }).eq('id', item.id);
 
-      const { data: inv } = await supabase
-        .from('pharmacy_inventory')
-        .select('quantity, reserved_quantity')
-        .eq('pharmacy_id', item.pharmacy_id)
-        .eq('medicine_id', item.medicine_id)
-        .single();
-
-      await supabase
-        .from('pharmacy_inventory')
-        .update({ 
-          quantity: Math.max(0, (inv?.quantity || 0) - item.quantity),
-          reserved_quantity: Math.max(0, (inv?.reserved_quantity || 0) - item.quantity) 
-        })
-        .eq('pharmacy_id', item.pharmacy_id)
-        .eq('medicine_id', item.medicine_id);
+      await supabase.rpc('checkout_inventory', {
+        p_pharmacy_id: item.pharmacy_id,
+        p_medicine_id: item.medicine_id,
+        p_qty: item.quantity
+      });
     }
 
     return { message: 'Checkout successful', bookingRef };
