@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { medicinesApi } from '../../api/medicines';
@@ -44,6 +44,27 @@ export default function HomePage() {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSearch(query);
+  };
+
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  
+  useEffect(() => {
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  const triggerInstall = async () => {
+    if (!deferredPrompt) {
+      alert("App is either already installed, or your browser doesn't support automatic installation. Try 'Add to Home Screen' from your browser menu!");
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') setDeferredPrompt(null);
   };
 
   return (
@@ -124,6 +145,23 @@ export default function HomePage() {
             </button>
           )}
         </div>
+
+        {/* Install Prominently */}
+        {deferredPrompt && (
+          <div style={{ marginTop: 20, background: 'linear-gradient(135deg, var(--color-primary), #026a78)', padding: 16, borderRadius: 16, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 4px 12px rgba(2, 128, 144, 0.3)' }}>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: 16 }}>Install MediFind</div>
+              <div style={{ fontSize: 13, opacity: 0.9, marginTop: 4 }}>Fast, offline medicine search!</div>
+            </div>
+            <button 
+              className="btn btn-sm"
+              onClick={triggerInstall}
+              style={{ background: 'white', color: 'var(--color-primary)', fontWeight: 700, borderRadius: 20, border: 'none', padding: '8px 16px', cursor: 'pointer' }}
+            >
+              Get App
+            </button>
+          </div>
+        )}
 
         {/* Recent searches */}
         {recent.length > 0 && (
