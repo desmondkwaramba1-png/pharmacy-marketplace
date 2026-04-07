@@ -47,11 +47,12 @@ export default function MedicineDetailPage() {
   });
 
   const getDirections = (pharmacyName: string, address: string, lat?: number, lng?: number) => {
+    // We now guarantee coordinates via SQL, so we can always stay in-app
     if (lat && lng) {
-      navigate(`/map?destLat=${lat}&destLng=${lng}`);
+      navigate(`/map?destLat=${lat}&destLng=${lng}&name=${encodeURIComponent(pharmacyName)}`);
     } else {
-      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${pharmacyName} ${address} Zimbabwe`)}`;
-      window.open(url, '_blank');
+      // Fallback just in case, but using the in-app search
+      navigate(`/map?q=${encodeURIComponent(pharmacyName)}`);
     }
   };
 

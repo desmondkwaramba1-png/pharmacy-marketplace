@@ -136,7 +136,15 @@ export const medicinesApi = {
 
     if (aErr) throw aErr;
 
-    const enrichedAvailability = (availability || []).map((item: any) => {
+    // Deduplicate by pharmacyId to ensure "10 instead of 5" errors don't happen
+    const uniqueMap = new Map();
+    (availability || []).forEach((item: any) => {
+      if (!uniqueMap.has(item.pharmacy_id) || item.quantity > uniqueMap.get(item.pharmacy_id).quantity) {
+        uniqueMap.set(item.pharmacy_id, item);
+      }
+    });
+
+    const enrichedAvailability = Array.from(uniqueMap.values()).map((item: any) => {
       let distance = null;
       const p = item.pharmacy as any;
       if (lat != null && lng != null && p?.latitude && p?.longitude) {

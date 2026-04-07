@@ -38,24 +38,35 @@ export default function MapViewPage() {
     staleTime: 15 * 60 * 1000,
   });
 
-  const { data: routeData } = useQuery({
+  const { data: routeData, isLoading: isRouteLoading } = useQuery({
     queryKey: ['route', lng, lat, destLng, destLat],
     queryFn: async () => {
       if (!destLat || !destLng || !lng || !lat) return null;
-      const url = `https://router.project-osrm.org/route/v1/driving/${lng},${lat};${destLng},${destLat}?overview=full&geometries=geojson`;
+      // Added steps=true to get turn-by-turn text instructions
+      const url = `https://router.project-osrm.org/route/v1/driving/${lng},${lat};${destLng},${destLat}?overview=full&geometries=geojson&steps=true`;
       const res = await fetch(url);
       const json = await res.json();
       if (json.code !== 'Ok' || !json.routes.length) return null;
+      
+      const route = json.routes[0];
       // OSRM returns [lng, lat], Leaflet polyline expects [lat, lng]
-      const coordinates = json.routes[0].geometry.coordinates.map((c: number[]) => [c[1], c[0]]);
-      return coordinates as [number, number][];
+      const coordinates = route.geometry.coordinates.map((c: number[]) => [c[1], c[0]]);
+      
+      // Extract human-readable steps
+      const steps = route.legs[0].steps.map((s: any) => ({
+        instruction: s.maneuver.instruction,
+        distance: s.distance,
+        name: s.name
+      }));
+
+      return { coordinates, steps, distance: route.distance, duration: route.duration };
     },
     enabled: !!destLat && !!destLng && !!lat && !!lng,
     staleTime: 5 * 60 * 1000,
   });
 
   const getDirections = (pharmacy: Pharmacy) => {
-    navigate(`/map?destLat=${pharmacy.latitude}&destLng=${pharmacy.longitude}`);
+    navigate(`/map?destLat=${pharmacy.latitude}&destLng=${pharmacy.longitude}&name=${encodeURIComponent(pharmacy.name)}`);
     setShowMap(true);
     setSelectedPharmacy(null);
   };
@@ -64,7 +75,7 @@ export default function MapViewPage() {
     <div className="page">
       <header className="app-header">
         <button className="back-btn" onClick={() => navigate(-1)} aria-label="Back"><FiChevronLeft /></button>
-        <h1 className="app-header-title">Pharmacy Map</h1>
+        <h1 className="app-header-title">{showMap && destLat ? 'Navigation' : 'Pharmacy Map'}</h1>
         <button
           className="btn-icon"
           onClick={() => setShowMap(!showMap)}
@@ -75,7 +86,7 @@ export default function MapViewPage() {
       </header>
 
       {!showMap ? (
-        /* List view (default - cheaper data) */
+        /* List view */
         <div className="page-content">
           <p className="results-count">
             <strong>{pharmacies.length}</strong> pharmacies within 15km
@@ -139,8 +150,8 @@ export default function MapViewPage() {
           )}
         </div>
       ) : (
-        /* Map view - loaded lazily */
-        <div className="page-content-full">
+        /* Map view - updated with in-app directions panel */
+        <div className="page-content-full" style={{ position: 'relative' }}>
           <Suspense fallback={
             <div className="empty-state"><div className="empty-state-icon"><FiMap /></div><p>Loading map...</p></div>
           }>
@@ -149,13 +160,38 @@ export default function MapViewPage() {
               pharmacies={pharmacies}
               userCoords={[lat, lng]}
               onPharmacyClick={(p) => setSelectedPharmacy(p)}
-              routePositions={routeData || undefined}
+              routePositions={routeData?.coordinates || undefined}
               bounds={destLat && destLng ? [[lat, lng], [parseFloat(destLat), parseFloat(destLng)]] : undefined}
             />
           </Suspense>
 
-          {/* Bottom sheet for selected pharmacy */}
-          {selectedPharmacy && (
+          {/* In-app Directions Panel */}
+          {routeData && destLat && (
+            <div className="directions-panel">
+              <div className="directions-header">
+                <div style={{ fontWeight: 700 }}>Directions to {searchParams.get('name') || 'Pharmacy'}</div>
+                <div style={{ fontSize: 12, opacity: 0.8 }}>
+                  {(routeData.distance / 1000).toFixed(1)} km · {Math.round(routeData.duration / 60)} min
+                </div>
+              </div>
+              <div className="directions-steps">
+                {routeData.steps.map((s: any, i: number) => (
+                  <div key={i} className="direction-step">
+                    <span className="step-bullet">{i + 1}</span>
+                    <div className="step-content">
+                      <div className="step-text">{s.instruction}</div>
+                      {s.distance > 0 && (
+                        <div className="step-distance">Next {s.distance < 1000 ? `${Math.round(s.distance)}m` : `${(s.distance/1000).toFixed(1)}km`}</div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Bottom sheet for selected pharmacy (only show if not navigating) */}
+          {selectedPharmacy && !destLat && (
             <div className="modal-overlay" onClick={() => setSelectedPharmacy(null)}>
               <div className="map-bottom-sheet" onClick={(e) => e.stopPropagation()}>
                 <div className="map-sheet-handle" />
