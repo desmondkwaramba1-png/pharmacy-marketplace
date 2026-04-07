@@ -26,6 +26,8 @@ const mapPharmacy = (p: any) => p ? ({
   isActive: p.is_active ?? true
 }) : null;
 
+const single = (val: any) => Array.isArray(val) ? val[0] : val;
+
 const mapCartItem = (item: any) => ({
   id: item.id,
   cartId: item.cart_id,
@@ -35,8 +37,8 @@ const mapCartItem = (item: any) => ({
   reservedAt: item.reserved_at,
   expiresAt: item.expires_at,
   status: item.status,
-  medicine: mapMedicine(item.medicine),
-  pharmacy: mapPharmacy(item.pharmacy),
+  medicine: mapMedicine(single(item.medicine)),
+  pharmacy: mapPharmacy(single(item.pharmacy)),
   price: item.price || 0,
   remainingSeconds: item.remainingSeconds || 0,
   isExpired: item.isExpired || false
