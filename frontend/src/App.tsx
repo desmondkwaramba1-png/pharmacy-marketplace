@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import { useAuth } from './context/AuthContext';
 import OfflineBanner from './components/OfflineBanner';
+import InstallPWABanner from './components/InstallPWABanner';
 import BottomNav from './components/BottomNav';
 import CartDrawer from './components/CartDrawer';
 import { CartProvider } from './context/CartContext';
@@ -16,6 +17,7 @@ const LoginPage = lazy(() => import('./pages/patient/LoginPage'));
 function PatientLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-shell">
+      <InstallPWABanner />
       <OfflineBanner />
       {children}
       <BottomNav />
