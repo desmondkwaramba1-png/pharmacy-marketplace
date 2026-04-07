@@ -92,8 +92,10 @@ export const adminApi = {
       id: item.id,
       pharmacyId: item.pharmacy_id,
       medicineId: item.medicine_id,
-      stockStatus: item.stock_status as StockStatus,
+      stockStatus: (item.quantity - (item.reserved_quantity || 0)) <= 0 ? 'out_of_stock' : item.stock_status as StockStatus,
       quantity: item.quantity,
+      reservedQuantity: item.reserved_quantity || 0,
+      availableQuantity: Math.max(0, item.quantity - (item.reserved_quantity || 0)),
       price: item.price,
       lastUpdated: item.last_updated,
       updatedBy: item.updated_by ? { id: item.updated_by } : null,
@@ -278,14 +280,17 @@ export const adminApi = {
     const pharmacyId = await getMyPharmacyId();
     const { data: items } = await supabase
       .from('pharmacy_inventory')
-      .select('stock_status')
+      .select('stock_status, quantity, reserved_quantity')
       .eq('pharmacy_id', pharmacyId);
     
     const metrics = (items || []).reduce((acc, curr) => {
       acc.total++;
-      if (curr.stock_status === 'in_stock') acc.inStock++;
-      else if (curr.stock_status === 'low_stock') acc.lowStock++;
-      else if (curr.stock_status === 'out_of_stock') acc.outOfStock++;
+      const available = curr.quantity - (curr.reserved_quantity || 0);
+      const effectiveStatus = available <= 0 ? 'out_of_stock' : curr.stock_status;
+
+      if (effectiveStatus === 'in_stock') acc.inStock++;
+      else if (effectiveStatus === 'low_stock') acc.lowStock++;
+      else if (effectiveStatus === 'out_of_stock') acc.outOfStock++;
       return acc;
     }, { total: 0, inStock: 0, lowStock: 0, outOfStock: 0 });
 

@@ -83,6 +83,8 @@ export interface InventoryItem {
   medicineId: string;
   stockStatus: StockStatus;
   quantity: number;
+  reservedQuantity: number;
+  availableQuantity: number;
   price?: number | null;
   lastUpdated: string;
   medicine: Medicine;

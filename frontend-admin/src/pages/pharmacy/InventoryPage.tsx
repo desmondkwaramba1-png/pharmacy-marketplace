@@ -295,10 +295,26 @@ export default function InventoryPage() {
                   ))}
                 </div>
 
-                {/* Qty + Price */}
+                {/* Qty + Price info */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 10, background: 'var(--color-bg)', padding: 10, borderRadius: 8 }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Total</div>
+                    <div style={{ fontSize: 15, fontWeight: 700 }}>{item.quantity}</div>
+                  </div>
+                  <div style={{ textAlign: 'center', borderLeft: '1px solid var(--color-border)', borderRight: '1px solid var(--color-border)' }}>
+                    <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Reserved</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: item.reservedQuantity > 0 ? 'var(--color-warning)' : 'inherit' }}>{item.reservedQuantity}</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Available</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: item.availableQuantity > 0 ? 'var(--color-success)' : 'var(--color-error)' }}>{item.availableQuantity}</div>
+                  </div>
+                </div>
+
+                {/* Edit Qty + Price */}
                 <div className="inventory-input-row">
                   <div className="form-group">
-                    <label className="form-label" style={{ fontSize: 12 }}>Quantity</label>
+                    <label className="form-label" style={{ fontSize: 12 }}>Edit Total Quantity</label>
                     <input
                       className="form-input"
                       type="number"
