@@ -80,13 +80,13 @@ export const medicinesApi = {
 
     if (medIds.length === 0) return { results: [], total: 0, page: 1, limit: 20, query: q };
 
-    // 2. Query inventory for these medicines
+    // 2. Query inventory for these medicines with pruned columns for low bandwidth
     let invQuery = supabase
       .from('pharmacy_inventory')
       .select(`
-        *,
-        medicine:medicines(*),
-        pharmacy:pharmacies(*)
+        id, pharmacy_id, medicine_id, stock_status, quantity, price, last_updated,
+        medicine:medicines(id, generic_name, brand_name, dosage, form, category, image_url),
+        pharmacy:pharmacies(id, name, address, suburb, city, phone, latitude, longitude)
       `)
       .in('medicine_id', medIds);
 
@@ -140,12 +140,12 @@ export const medicinesApi = {
     
     if (mErr) throw mErr;
 
-    // 2. Get availability
+    // 2. Get availability with pruned columns
     const { data: availability, error: aErr } = await supabase
       .from('pharmacy_inventory')
       .select(`
-        *,
-        pharmacy:pharmacies(*)
+        id, pharmacy_id, medicine_id, stock_status, quantity, price, last_updated,
+        pharmacy:pharmacies(id, name, address, suburb, phone, latitude, longitude)
       `)
       .eq('medicine_id', id);
 
@@ -190,9 +190,9 @@ export const medicinesApi = {
     const { data, error } = await supabase
       .from('pharmacy_inventory')
       .select(`
-        *,
-        medicine:medicines(*),
-        pharmacy:pharmacies(*)
+        id, pharmacy_id, medicine_id, stock_status, quantity, price, last_updated,
+        medicine:medicines(id, generic_name, brand_name, dosage, form, category, image_url),
+        pharmacy:pharmacies(id, name, address, suburb, city, phone, latitude, longitude)
       `)
       .limit(6);
     

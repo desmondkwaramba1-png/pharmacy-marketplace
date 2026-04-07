@@ -89,40 +89,46 @@ export const cartApi = {
   getCart: async (): Promise<CartResponse> => {
     const cartId = await getOrCreateCartId();
     
-    // Fetch active reservations
+    // Fetch active reservations with related data
     const { data: items, error } = await supabase
       .from('cart_items')
       .select(`
-        *,
-        medicine:medicines(*),
-        pharmacy:pharmacies(*)
+        id, quantity, reserved_at, expires_at, status, pharmacy_id, medicine_id,
+        medicine:medicines(id, generic_name, brand_name, dosage, form, category, image_url),
+        pharmacy:pharmacies(id, name, address, suburb, city, phone)
       `)
       .eq('cart_id', cartId)
       .eq('status', 'reserved');
 
     if (error) throw error;
+    if (!items || items.length === 0) return { items: [], total: 0, itemCount: 0 };
 
-    // Fetch prices from inventory and calculate expiration
-    const enrichedItems = await Promise.all((items || []).map(async (item) => {
-      const { data: inv } = await supabase
-        .from('pharmacy_inventory')
-        .select('price')
-        .eq('pharmacy_id', item.pharmacy_id)
-        .eq('medicine_id', item.medicine_id)
-        .single();
+    // Fetch all relevant prices from inventory in ONE batch request instead of a waterfall
+    const { data: inventoryData } = await supabase
+      .from('pharmacy_inventory')
+      .select('pharmacy_id, medicine_id, price')
+      .in('pharmacy_id', items.map(i => i.pharmacy_id));
 
-      const now = new Date();
+    // Map prices for quick lookup
+    const priceMap = new Map();
+    inventoryData?.forEach(inv => {
+      priceMap.set(`${inv.pharmacy_id}-${inv.medicine_id}`, inv.price);
+    });
+
+    const now = new Date();
+    const enrichedItems = items.map((item) => {
+      const price = priceMap.get(`${item.pharmacy_id}-${item.medicine_id}`) || 0;
       const expiresAt = new Date(item.expires_at);
       const remainingMs = expiresAt.getTime() - now.getTime();
       const remainingSeconds = Math.max(0, Math.floor(remainingMs / 1000));
 
       return mapCartItem({
         ...item,
-        price: inv?.price || 0,
+        price,
         remainingSeconds,
         isExpired: remainingSeconds <= 0
       });
-    }));
+    });
 
     const total = enrichedItems.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
     const itemCount = enrichedItems.reduce((sum, item) => sum + item.quantity, 0);
