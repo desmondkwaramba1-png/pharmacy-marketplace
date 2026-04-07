@@ -37,19 +37,21 @@ export default function App() {
   return (
     <CartProvider>
       <BrowserRouter>
-        <Suspense fallback={<Loading />}>
-          <Routes>
-            {/* Patient routes */}
-            <Route path="/" element={<PatientLayout><HomePage /></PatientLayout>} />
-            <Route path="/search" element={<PatientLayout><SearchResultsPage /></PatientLayout>} />
-            <Route path="/medicine/:id" element={<PatientLayout><MedicineDetailPage /></PatientLayout>} />
-            <Route path="/map" element={<PatientLayout><MapViewPage /></PatientLayout>} />
+        <PatientLayout>
+          <Suspense fallback={<Loading />}>
+            <Routes>
+              {/* Patient routes */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/search" element={<SearchResultsPage />} />
+              <Route path="/medicine/:id" element={<MedicineDetailPage />} />
+              <Route path="/map" element={<MapViewPage />} />
 
-            <Route path="/login" element={<PatientLayout><LoginPage /></PatientLayout>} />
+              <Route path="/login" element={<LoginPage />} />
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </PatientLayout>
       </BrowserRouter>
     </CartProvider>
   );

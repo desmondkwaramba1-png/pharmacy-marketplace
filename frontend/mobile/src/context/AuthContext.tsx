@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { supabase } from '../api/supabaseClient';
 import type { User } from '../types';
 
@@ -18,7 +18,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check active session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUser(mapSupabaseUser(session.user));
@@ -26,7 +25,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         setUser(mapSupabaseUser(session.user));
@@ -39,7 +37,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Helper to map Supabase user to our app's User type
   const mapSupabaseUser = (sbUser: any): User => ({
     id: sbUser.id,
     email: sbUser.email || '',
@@ -68,7 +65,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
-  // Memoize context value to prevent unnecessary re-renders of the entire app shell
   const value = useMemo(() => ({
     user, 
     isLoading, 
@@ -78,11 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: !!user 
   }), [user, isLoading]);
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

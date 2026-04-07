@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cartApi } from '../api/cart';
 import { CartResponse } from '../types';
+import { Alert } from 'react-native';
 
 interface CartContextType {
   cart: CartResponse | undefined;
@@ -19,11 +20,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [isCartOpen, setCartOpen] = useState(false);
 
-  // Poll the cart every 10 seconds to update 'remainingSeconds' and 'isExpired' automatically
+  // Poll the cart every 15 seconds on mobile
   const { data: cart, isLoading } = useQuery({
     queryKey: ['patient-cart'],
     queryFn: cartApi.getCart,
-    refetchInterval: 10000,
+    refetchInterval: 15000,
   });
 
   const addMutation = useMutation({
@@ -31,11 +32,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     onSuccess: (updatedCart) => {
       queryClient.setQueryData(['patient-cart'], updatedCart);
       setCartOpen(true);
-      // Invalidate search results to reflect the immediate drop in stock
       queryClient.invalidateQueries({ queryKey: ['search'] });
     },
     onError: (err: any) => {
-      alert(err.message || 'Failed to add item. Maybe not enough stock?');
+      Alert.alert('Error', err.message || 'Failed to add item. Maybe not enough stock?');
     }
   });
 
@@ -43,7 +43,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     mutationFn: (cartItemId: string) => cartApi.removeFromCart(cartItemId),
     onSuccess: (updatedCart) => {
       queryClient.setQueryData(['patient-cart'], updatedCart);
-      // Invalidate search results so stock comes back
       queryClient.invalidateQueries({ queryKey: ['search'] });
     },
   });
@@ -60,7 +59,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const removeFromCart = (cartItemId: string) => removeMutation.mutate(cartItemId);
   const checkout = async () => await checkoutMutation.mutateAsync();
 
-  // Memoize context value to prevent full-app re-renders every 10s during polling
   const value = useMemo(() => ({ 
     cart, 
     isLoading, 
@@ -71,11 +69,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCartOpen 
   }), [cart, isLoading, isCartOpen]);
 
-  return (
-    <CartContext.Provider value={value}>
-      {children}
-    </CartContext.Provider>
-  );
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {

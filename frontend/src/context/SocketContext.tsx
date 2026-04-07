@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, ReactNode, useMemo } from 'react';
 import { supabase } from '../api/supabaseClient';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -53,8 +53,10 @@ export const SocketProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     };
   }, [queryClient]);
 
+  const value = useMemo(() => ({ supabase }), []);
+
   return (
-    <SocketContext.Provider value={{ supabase }}>
+    <SocketContext.Provider value={value}>
       {children}
     </SocketContext.Provider>
   );
