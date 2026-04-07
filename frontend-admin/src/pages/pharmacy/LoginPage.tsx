@@ -87,7 +87,7 @@ export default function LoginPage() {
         {/* Demo accounts */}
         <div style={{ textAlign: 'center' }}>
           <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 8 }}>
-            Demo accounts (tap to fill):
+            Quick Login (Demo Accounts):
           </p>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
             {[1,2,3,4,5].map((n) => (
@@ -96,12 +96,29 @@ export default function LoginPage() {
                 type="button"
                 className="pill active"
                 style={{ fontSize: 11 }}
-                onClick={() => fillDemo(n)}
+                onClick={() => {
+                  setEmail(`admin@pharmacy${n}.com`);
+                  setPassword('Password123');
+                }}
               >
-                Pharmacy {n}
+                Pharma {n}
               </button>
             ))}
+            <button
+              type="button"
+              className="pill active"
+              style={{ fontSize: 11, background: 'rgba(2, 128, 144, 0.15)', borderColor: 'var(--color-primary)' }}
+              onClick={() => {
+                setEmail('demo@medifind.com');
+                setPassword('Password123');
+              }}
+            >
+              Demo Lab 🧪
+            </button>
           </div>
+          <p style={{ fontSize: 10, color: 'var(--color-text-disabled)', marginTop: 8 }}>
+            Or type your own credentials linked via SQL
+          </p>
         </div>
 
         <div style={{ marginTop: 20, textAlign: 'center' }}>
