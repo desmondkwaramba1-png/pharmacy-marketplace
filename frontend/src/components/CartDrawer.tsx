@@ -66,7 +66,7 @@ export default function CartDrawer() {
               {items.length === 0 ? (
                 <div className="empty-state">
                   <div className="empty-state-icon"><FiShoppingBag /></div>
-                  <div className="empty-state-text">Your cart is empty [Syncing V3]</div>
+                  <div className="empty-state-text">Your cart is empty</div>
                   <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 8 }}>
                     Medicines you add to your cart are reserved for 10 minutes to allow you to get to the pharmacy.
                   </p>
