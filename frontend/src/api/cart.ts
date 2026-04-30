@@ -109,9 +109,14 @@ async function getOrCreateCartId(): Promise<string> {
   return newCart.id;
 }
 
+let cachedCartId: string | null = null;
+
 export const cartApi = {
   getCart: async (): Promise<CartResponse> => {
-    const cartId = await getOrCreateCartId();
+    if (!cachedCartId) {
+      cachedCartId = await getOrCreateCartId();
+    }
+    const cartId = cachedCartId;
     
     // Fetch active reservations with related data
     const { data: items, error } = await supabase
@@ -165,54 +170,27 @@ export const cartApi = {
   },
 
   addToCart: async (pId: string, mId: string, qty: number = 1): Promise<CartResponse> => {
-    const cartId = await getOrCreateCartId();
+    if (!cachedCartId) {
+      cachedCartId = await getOrCreateCartId();
+    }
+    const cartId = cachedCartId;
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-    const { data: existing, error: fetchErr } = await supabase
-      .from('cart_items')
-      .select('*')
-      .eq('cart_id', cartId)
-      .eq('pharmacy_id', pId)
-      .eq('medicine_id', mId)
-      .eq('status', 'reserved')
-      .maybeSingle();
-
-    if (fetchErr) throw new Error("Database fetch error: " + fetchErr.message);
-
-    if (existing) {
-      const { error: updateErr } = await supabase
-        .from('cart_items')
-        .update({ 
-          quantity: existing.quantity + qty, 
-          expires_at: expiresAt 
-        })
-        .eq('id', existing.id);
-      if (updateErr) throw new Error("Failed to update cart: " + updateErr.message);
-    } else {
-      const { error: insertErr } = await supabase
-        .from('cart_items')
-        .insert([{
-          cart_id: cartId,
-          pharmacy_id: pId,
-          medicine_id: mId,
-          quantity: qty,
-          expires_at: expiresAt
-        }]);
-      
-      if (insertErr) {
-        if (insertErr.code === '23505') {
-          throw new Error("Medicine already in history. Please run the SQL fix in Supabase to allow re-ordering.");
-        }
-        throw new Error("Failed to add to cart: (" + insertErr.code + ") " + insertErr.message);
-      }
-    }
-
-    const { error: rpcErr } = await supabase.rpc('increment_reserved_quantity', {
+    // Use a high-speed RPC to handle everything in ONE database transaction
+    const { error: rpcErr } = await supabase.rpc('add_to_cart_v2', {
+      p_cart_id: cartId,
       p_pharmacy_id: pId,
       p_medicine_id: mId,
-      p_qty: qty
+      p_qty: qty,
+      p_expires_at: expiresAt
     });
-    if (rpcErr) throw new Error("Inventory allocation failed: " + rpcErr.message);
+
+    if (rpcErr) {
+      if (rpcErr.code === 'P0001' || rpcErr.message?.includes('stock')) {
+        throw new Error("Insufficient stock or already reserved.");
+      }
+      throw new Error("Failed to add to cart: " + rpcErr.message);
+    }
 
     return cartApi.getCart();
   },
