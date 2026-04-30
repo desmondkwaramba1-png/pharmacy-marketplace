@@ -188,7 +188,7 @@ export const medicinesApi = {
         medicine:medicines!inner(id, generic_name, brand_name, dosage, form, category, image_url),
         pharmacy:pharmacies!inner(id, name, address, suburb, city, phone, latitude, longitude)
       `)
-      .limit(6);
+      .limit(24);
 
     if (error) throw error;
     return (data || []).map((item: any) => ({
