@@ -122,14 +122,7 @@ export default function LoginPage() {
         </div>
 
         <div style={{ marginTop: 20, textAlign: 'center' }}>
-          <button
-            type="button"
-            className="btn-ghost btn"
-            onClick={() => navigate('/')}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
-          >
-            <FiArrowLeft /> Back to Patient App
-          </button>
+          {/* Back to Patient App button removed */}
         </div>
       </div>
     </div>
