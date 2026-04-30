@@ -102,7 +102,7 @@ export default function MedicineDetailPage() {
       {/* Hero */}
       <div className="medicine-detail-hero" style={{ flexDirection: 'column', alignItems: 'center', gap: 16 }}>
         {medicine.imageUrl ? (
-          <img src={medicine.imageUrl} alt={medicine.genericName} style={{ width: 120, height: 120, borderRadius: 20, objectFit: 'cover', background: '#f5f5f5', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} />
+          <img src={medicine.imageUrl} alt={medicine.genericName} style={{ width: 120, height: 120, borderRadius: 20, objectFit: 'cover', background: '#f5f5f5', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5-7v-2h-2V8h-2v2H8v2h2v2h2v-2h2z'/%3E%3C/svg%3E"; }} />
         ) : (
           <div className="medicine-detail-hero-icon" style={{ width: 80, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FaPills size={40} /></div>
         )}

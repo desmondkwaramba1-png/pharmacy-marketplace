@@ -173,7 +173,7 @@ export default function HomePage() {
                   <div style={{ display: 'flex', gap: 12 }}>
                     <div className="popular-card-icon" style={{ width: 64, height: 64, padding: med.imageUrl ? 0 : undefined, overflow: 'hidden', flexShrink: 0 }}>
                       {med.imageUrl ? (
-                        <img src={med.imageUrl} alt={med.genericName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+                        <img src={med.imageUrl} alt={med.genericName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5-7v-2h-2V8h-2v2H8v2h2v2h2v-2h2z'/%3E%3C/svg%3E"; }} />
                       ) : (
                         <FaPills color="var(--color-primary)" size={32} />
                       )}
