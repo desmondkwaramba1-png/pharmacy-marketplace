@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { useAuth } from './context/AuthContext';
 import OfflineBanner from './components/OfflineBanner';
 import AdminNav from './components/AdminNav';
+import Sidebar from './components/Sidebar';
 import { Toaster } from 'react-hot-toast';
 
 // Lazy load all pages for code splitting
@@ -12,14 +13,15 @@ const InventoryPage = lazy(() => import('./pages/pharmacy/InventoryPage'));
 const PickupPortalPage = lazy(() => import('./pages/pharmacy/PickupPortalPage'));
 const ProfilePage = lazy(() => import('./pages/pharmacy/ProfilePage'));
 
-
-
 function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-shell">
-      <AdminNav />
-      <OfflineBanner />
-      {children}
+      <Sidebar />
+      <div className="desktop-main-wrapper">
+        <AdminNav />
+        <OfflineBanner />
+        {children}
+      </div>
     </div>
   );
 }
