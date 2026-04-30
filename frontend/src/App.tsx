@@ -18,16 +18,20 @@ const LoginPage = lazy(() => import('./pages/patient/LoginPage'));
 const MyReservationsPage = lazy(() => import('./pages/patient/MyReservationsPage'));
 
 import DesktopNav from './components/DesktopNav';
+import Sidebar from './components/Sidebar';
 
 function PatientLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-shell">
-      <DesktopNav />
-      <InstallPWABanner />
-      <OfflineBanner />
-      {children}
-      <BottomNav />
-      <CartDrawer />
+      <Sidebar />
+      <div className="desktop-main-wrapper">
+        <DesktopNav />
+        <InstallPWABanner />
+        <OfflineBanner />
+        {children}
+        <BottomNav />
+        <CartDrawer />
+      </div>
     </div>
   );
 }
