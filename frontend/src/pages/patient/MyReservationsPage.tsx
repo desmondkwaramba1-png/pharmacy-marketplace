@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { cartApi } from '../../api/cart';
-import { FiChevronLeft, FiClock, FiCheckCircle, FiXCircle, FiShoppingBag } from 'react-icons/fi';
+import { FiChevronLeft, FiClock } from 'react-icons/fi';
 import { FaClinicMedical } from 'react-icons/fa';
 
 export default function MyReservationsPage() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ['my-reservations'],
@@ -39,7 +38,7 @@ export default function MyReservationsPage() {
       <div className="page-content">
         {(!orders || orders.length === 0) ? (
           <div className="empty-state">
-            <div className="empty-state-icon"><FiShoppingBag /></div>
+            <div className="empty-state-icon">💊</div>
             <div className="empty-state-title">No reservations yet</div>
             <p>Your medicine bookings will appear here.</p>
             <button className="btn btn-primary" onClick={() => navigate('/')} style={{ marginTop: 20 }}>
@@ -67,7 +66,7 @@ function OrderCard({ order }: { order: any }) {
 
     const timer = setInterval(() => {
       const now = new Date().getTime();
-      const expiry = new Date(order.expires_at).getTime();
+      const expiry = new Date(order.expiresAt).getTime();
       const distance = expiry - now;
 
       if (distance < 0) {
@@ -123,7 +122,7 @@ function OrderCard({ order }: { order: any }) {
           Confirmation Code
         </div>
         <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--color-text)', letterSpacing: 2, margin: '4px 0' }}>
-          {order.booking_ref}
+          {order.bookingRef}
         </div>
         {order.status === 'pending' && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: isExpiredLocally ? 'var(--color-error)' : 'var(--color-primary)', fontWeight: 600 }}>
@@ -136,12 +135,12 @@ function OrderCard({ order }: { order: any }) {
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Items:</div>
           <div style={{ fontSize: 12, fontWeight: 500 }}>
-            {order.items?.map((i: any) => i.medicine?.generic_name).join(', ')}
+            {order.items?.map((i: any) => i.medicine?.genericName).join(', ')}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>To pay:</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-primary)' }}>${order.total_amount}</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-primary)' }}>${order.totalAmount?.toFixed(2)}</div>
         </div>
       </div>
     </div>
