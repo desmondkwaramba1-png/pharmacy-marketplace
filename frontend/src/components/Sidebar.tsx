@@ -1,9 +1,9 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { FiSearch, FiMap, FiClock, FiHeart, FiSettings, FiHelpCircle, FiShoppingBag } from 'react-icons/fi';
 import { FaPills } from 'react-icons/fa';
 
 export default function Sidebar() {
+  const navigate = useNavigate();
   const menuItems = [
     { to: '/', label: 'Search Medicines', icon: <FiSearch /> },
     { to: '/map', label: 'Pharmacy Map', icon: <FiMap /> },
@@ -45,7 +45,11 @@ export default function Sidebar() {
         <span className="sidebar-section-title">Categories</span>
         <div className="sidebar-categories">
           {categoryItems.map((cat) => (
-            <button key={cat.label} className="sidebar-category-btn">
+            <button 
+              key={cat.label} 
+              className="sidebar-category-btn"
+              onClick={() => navigate(`/search?q=${encodeURIComponent(cat.label)}`)}
+            >
               <span className="cat-icon">{cat.icon}</span>
               <span className="cat-label">{cat.label}</span>
             </button>

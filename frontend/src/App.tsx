@@ -16,6 +16,9 @@ const MedicineDetailPage = lazy(() => import('./pages/patient/MedicineDetailPage
 const MapViewPage = lazy(() => import('./pages/patient/MapViewPage'));
 const LoginPage = lazy(() => import('./pages/patient/LoginPage'));
 const MyReservationsPage = lazy(() => import('./pages/patient/MyReservationsPage'));
+const FavoritesPage = lazy(() => import('./pages/patient/PlaceholderPages').then(m => ({ default: m.default })));
+const SettingsPage = lazy(() => import('./pages/patient/PlaceholderPages').then(m => ({ default: m.SettingsPage })));
+const HelpPage = lazy(() => import('./pages/patient/PlaceholderPages').then(m => ({ default: m.HelpPage })));
 
 import DesktopNav from './components/DesktopNav';
 import Sidebar from './components/Sidebar';
@@ -56,6 +59,9 @@ export default function App() {
               <Route path="/medicine/:id" element={<MedicineDetailPage />} />
               <Route path="/map" element={<MapViewPage />} />
               <Route path="/reservations" element={<MyReservationsPage />} />
+              <Route path="/favorites" element={<FavoritesPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/help" element={<HelpPage />} />
 
               <Route path="/login" element={<LoginPage />} />
 
