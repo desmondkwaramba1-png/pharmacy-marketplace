@@ -1,4 +1,5 @@
 import { useNetwork } from '../hooks/useNetwork';
+import React from 'react';
 import { FiWifiOff } from 'react-icons/fi';
 
 export default function OfflineBanner() {

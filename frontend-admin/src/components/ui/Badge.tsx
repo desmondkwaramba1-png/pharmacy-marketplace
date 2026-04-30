@@ -1,3 +1,4 @@
+import React from 'react';
 import type { StockStatus } from '../../types';
 import { FaCheckCircle, FaExclamationTriangle, FaTimesCircle } from 'react-icons/fa';
 
