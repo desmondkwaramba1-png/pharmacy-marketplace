@@ -173,7 +173,7 @@ export default function HomePage() {
                   <div style={{ display: 'flex', gap: 12 }}>
                     <div className="popular-card-icon" style={{ width: 64, height: 64, padding: med.imageUrl ? 0 : undefined, overflow: 'hidden', flexShrink: 0 }}>
                       {med.imageUrl ? (
-                        <img src={med.imageUrl} alt={med.genericName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img src={med.imageUrl} alt={med.genericName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
                       ) : (
                         <FaPills color="var(--color-primary)" size={32} />
                       )}

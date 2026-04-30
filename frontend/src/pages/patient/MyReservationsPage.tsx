@@ -11,7 +11,7 @@ export default function MyReservationsPage() {
   const { data: orders, isLoading } = useQuery({
     queryKey: ['my-reservations'],
     queryFn: cartApi.getOrders,
-    refetchInterval: 10000, // Sync status every 10s
+    refetchInterval: 30000, // Sync status every 30s instead of 10s to reduce load
   });
 
   if (isLoading) {

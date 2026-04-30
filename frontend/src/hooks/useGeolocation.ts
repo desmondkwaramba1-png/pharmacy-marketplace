@@ -60,7 +60,7 @@ export function useGeolocation(): GeolocationState {
         }
         setState({ coords: null, error: err.message, isLoading: false });
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
     );
 
     return () => navigator.geolocation.clearWatch(id);

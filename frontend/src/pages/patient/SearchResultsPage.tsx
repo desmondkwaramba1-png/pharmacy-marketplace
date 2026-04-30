@@ -185,7 +185,7 @@ export default function SearchResultsPage() {
             >
               <div className="medicine-card-header" style={{ gap: 12 }}>
                 {result.imageUrl ? (
-                  <img src={result.imageUrl} alt={result.medicineName} style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', background: '#f5f5f5' }} />
+                  <img src={result.imageUrl} alt={result.medicineName} style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', background: '#f5f5f5' }} loading="lazy" />
                 ) : (
                   <div className="medicine-icon"><FaPills color="var(--color-primary)" /></div>
                 )}
