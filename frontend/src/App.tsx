@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { useAuth } from './context/AuthContext';
 import OfflineBanner from './components/OfflineBanner';
 import InstallPWABanner from './components/InstallPWABanner';
@@ -17,9 +17,12 @@ const MapViewPage = lazy(() => import('./pages/patient/MapViewPage'));
 const LoginPage = lazy(() => import('./pages/patient/LoginPage'));
 const MyReservationsPage = lazy(() => import('./pages/patient/MyReservationsPage'));
 
+import DesktopNav from './components/DesktopNav';
+
 function PatientLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-shell">
+      <DesktopNav />
       <InstallPWABanner />
       <OfflineBanner />
       {children}

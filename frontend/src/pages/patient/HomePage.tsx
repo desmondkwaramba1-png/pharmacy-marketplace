@@ -51,7 +51,7 @@ export default function HomePage() {
     <div className="page">
       {/* Hero header */}
       <div className="home-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div className="home-top-bar">
           <div className="home-greeting">🇿🇼 Zimbabwe</div>
           <div style={{ display: 'flex', gap: 12 }}>
             <button 
