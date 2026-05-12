@@ -1,14 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cartApi } from '../api/cart';
-import { CartResponse } from '../types';
+import { CartResponse, CheckoutOptions } from '../types';
 
 interface CartContextType {
   cart: CartResponse | undefined;
   isLoading: boolean;
   addToCart: (pharmacyId: string, medicineId: string, quantity?: number) => void;
   removeFromCart: (cartItemId: string) => void;
-  checkout: (pharmacyId: string) => Promise<{ message: string; bookingRef: string; orderId: string; expiresAt: string }>;
+  checkout: (pharmacyId: string, options: CheckoutOptions) => Promise<{ message: string; bookingRef: string; orderId: string; expiresAt: string; paymentStatus: string; transactionId?: string }>;
   isCartOpen: boolean;
   setCartOpen: (open: boolean) => void;
 }
@@ -54,7 +54,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   });
 
   const checkoutMutation = useMutation({
-    mutationFn: (pharmacyId: string) => cartApi.checkout(pharmacyId),
+    mutationFn: ({ pharmacyId, options }: { pharmacyId: string; options: CheckoutOptions }) =>
+      cartApi.checkout(pharmacyId, options),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['patient-cart'] });
       queryClient.invalidateQueries({ queryKey: ['search'] });
@@ -64,7 +65,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addToCart = (pId: string, mId: string, qty = 1) => addMutation.mutate({ pId, mId, qty });
   const removeFromCart = (cartItemId: string) => removeMutation.mutate(cartItemId);
-  const checkout = async (pharmacyId: string) => await checkoutMutation.mutateAsync(pharmacyId);
+  const checkout = async (pharmacyId: string, options: CheckoutOptions) =>
+    await checkoutMutation.mutateAsync({ pharmacyId, options });
 
   // Memoize context value to prevent full-app re-renders every 10s during polling
   const value = useMemo(() => ({ 

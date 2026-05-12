@@ -110,6 +110,91 @@ CREATE POLICY "Cart items open to all for now" ON cart_items USING (true);
 -- These functions run with SECURITY DEFINER to bypass RLS policies
 -- that normally prevent patients from updating inventory quantities.
 
+-- 6. Create Orders Table (supports online payment and delivery)
+CREATE TABLE IF NOT EXISTS orders (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  booking_ref TEXT NOT NULL UNIQUE,
+  user_id UUID REFERENCES auth.users(id),
+  pharmacy_id UUID REFERENCES pharmacies(id) ON DELETE CASCADE NOT NULL,
+  total_amount DECIMAL NOT NULL DEFAULT 0,
+  delivery_fee DECIMAL NOT NULL DEFAULT 0,
+  status TEXT DEFAULT 'pending' NOT NULL,          -- pending | confirmed | out_for_delivery | delivered | collected | cancelled | expired
+  payment_method TEXT DEFAULT 'in_person' NOT NULL, -- online | in_person
+  payment_status TEXT DEFAULT 'pending' NOT NULL,   -- pending | paid | failed
+  delivery_method TEXT DEFAULT 'pickup' NOT NULL,   -- pickup | delivery
+  delivery_address TEXT,
+  delivery_notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL
+);
+
+-- 7. Create Order Items Table
+CREATE TABLE IF NOT EXISTS order_items (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_id UUID REFERENCES orders(id) ON DELETE CASCADE NOT NULL,
+  medicine_id UUID REFERENCES medicines(id) ON DELETE RESTRICT NOT NULL,
+  quantity INTEGER DEFAULT 1 NOT NULL,
+  price_at_booking DECIMAL NOT NULL DEFAULT 0
+);
+
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view own orders" ON orders FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Authenticated users can insert orders" ON orders FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update own orders" ON orders FOR UPDATE USING (auth.uid() = user_id);
+
+ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Order items open for insert" ON order_items FOR INSERT WITH CHECK (true);
+CREATE POLICY "Order items viewable via order" ON order_items FOR SELECT USING (
+  order_id IN (SELECT id FROM orders WHERE user_id = auth.uid())
+);
+
+-- Simulate online payment (marks order as paid)
+CREATE OR REPLACE FUNCTION process_online_payment(p_order_id UUID, p_card_last4 TEXT)
+RETURNS JSONB AS $$
+DECLARE
+  v_order orders%ROWTYPE;
+  v_success BOOLEAN;
+BEGIN
+  SELECT * INTO v_order FROM orders WHERE id = p_order_id;
+  IF NOT FOUND THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Order not found');
+  END IF;
+  IF v_order.payment_status = 'paid' THEN
+    RETURN jsonb_build_object('success', true, 'message', 'Already paid');
+  END IF;
+
+  -- Simulate: 95% success rate
+  v_success := (random() > 0.05);
+
+  IF v_success THEN
+    UPDATE orders
+    SET payment_status = 'paid',
+        status = CASE WHEN delivery_method = 'delivery' THEN 'confirmed' ELSE 'confirmed' END
+    WHERE id = p_order_id;
+    RETURN jsonb_build_object('success', true, 'transactionId', 'TXN-' || upper(substring(gen_random_uuid()::text, 1, 8)));
+  ELSE
+    UPDATE orders SET payment_status = 'failed' WHERE id = p_order_id;
+    RETURN jsonb_build_object('success', false, 'error', 'Card declined. Please try another card.');
+  END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Mark order as collected (in-person pickup)
+CREATE OR REPLACE FUNCTION collect_order(p_booking_ref TEXT)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE orders SET status = 'collected' WHERE booking_ref = p_booking_ref;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Mark delivery as completed
+CREATE OR REPLACE FUNCTION complete_delivery(p_booking_ref TEXT)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE orders SET status = 'delivered' WHERE booking_ref = p_booking_ref;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 CREATE OR REPLACE FUNCTION increment_reserved_quantity(p_pharmacy_id UUID, p_medicine_id UUID, p_qty INTEGER)
 RETURNS VOID AS $$
 BEGIN

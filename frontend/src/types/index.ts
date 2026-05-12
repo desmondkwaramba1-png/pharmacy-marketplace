@@ -134,13 +134,33 @@ export interface CartResponse {
   itemCount: number;
 }
 
+export type PaymentMethod = 'online' | 'in_person';
+export type DeliveryMethod = 'pickup' | 'delivery';
+export type OrderStatus = 'pending' | 'confirmed' | 'out_for_delivery' | 'delivered' | 'collected' | 'cancelled' | 'expired';
+export type PaymentStatus = 'pending' | 'paid' | 'failed';
+
+export interface CheckoutOptions {
+  paymentMethod: PaymentMethod;
+  deliveryMethod: DeliveryMethod;
+  deliveryAddress?: string;
+  deliveryNotes?: string;
+  cardNumber?: string;
+  cardExpiry?: string;
+  cardCvc?: string;
+}
+
 export interface Order {
   id: string;
   bookingRef: string;
   userId?: string;
   pharmacyId: string;
   totalAmount: number;
-  status: 'pending' | 'collected' | 'expired' | 'cancelled';
+  deliveryFee: number;
+  status: OrderStatus;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  deliveryMethod: DeliveryMethod;
+  deliveryAddress?: string;
   createdAt: string;
   expiresAt: string;
   pharmacy?: Pharmacy;
