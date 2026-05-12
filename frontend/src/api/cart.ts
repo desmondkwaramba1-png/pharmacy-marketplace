@@ -247,6 +247,7 @@ export const cartApi = {
     const { data: order, error: orderErr } = await supabase
       .from('orders')
       .insert([{
+        // NOTE: run the SQL migration in Supabase before using this
         booking_ref: bookingRef,
         user_id: user?.id,
         pharmacy_id: pharmacyId,
@@ -263,7 +264,13 @@ export const cartApi = {
       .select()
       .single();
 
-    if (orderErr) throw orderErr;
+    if (orderErr) {
+      const msg = orderErr.message || '';
+      if (msg.includes('does not exist') || msg.includes('column')) {
+        throw new Error('Database not set up yet. Please ask your admin to run the SQL migration in Supabase.');
+      }
+      throw new Error(msg || 'Failed to create order');
+    }
 
     // 3. Create Order Items
     await supabase.from('order_items').insert(
@@ -287,11 +294,14 @@ export const cartApi = {
     let transactionId: string | undefined;
 
     if (options.paymentMethod === 'online') {
-      const { data: payResult } = await supabase.rpc('process_online_payment', {
+      const { data: payResult, error: payErr } = await supabase.rpc('process_online_payment', {
         p_order_id: order.id,
         p_card_last4: options.cardNumber?.slice(-4) || '0000'
       });
 
+      if (payErr) {
+        throw new Error('Payment service unavailable. Please run the SQL migration in Supabase first.');
+      }
       if (!payResult?.success) {
         throw new Error(payResult?.error || 'Payment failed. Please try again.');
       }
