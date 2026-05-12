@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { CartResponse } from '../types';
+import { CartResponse, CheckoutOptions } from '../types';
 
 // Mapping helpers to convert Supabase snake_case to Frontend camelCase
 const mapMedicine = (m: any) => m ? ({
@@ -59,7 +59,12 @@ const mapOrder = (order: any): any => ({
   userId: order.user_id,
   pharmacyId: order.pharmacy_id,
   totalAmount: Number(order.total_amount),
+  deliveryFee: Number(order.delivery_fee || 0),
   status: order.status,
+  paymentMethod: order.payment_method || 'in_person',
+  paymentStatus: order.payment_status || 'pending',
+  deliveryMethod: order.delivery_method || 'pickup',
+  deliveryAddress: order.delivery_address,
   createdAt: order.created_at,
   expiresAt: order.expires_at,
   pharmacy: mapPharmacy(single(order.pharmacy)),
@@ -214,28 +219,31 @@ export const cartApi = {
     return cartApi.getCart();
   },
 
-  checkout: async (pharmacyId: string): Promise<{ message: string; bookingRef: string; orderId: string; expiresAt: string }> => {
+  checkout: async (
+    pharmacyId: string,
+    options: CheckoutOptions
+  ): Promise<{ message: string; bookingRef: string; orderId: string; expiresAt: string; paymentStatus: string; transactionId?: string }> => {
     const { data: { user } } = await supabase.auth.getUser();
     const cartId = await getOrCreateCartId();
     const bookingRef = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 Min Window
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+    const DELIVERY_FEE = options.deliveryMethod === 'delivery' ? 5.00 : 0;
 
     // 1. Get current cart items for this pharmacy
     const { data: cartItems } = await supabase
       .from('cart_items')
-      .select(`
-        *,
-        medicine:medicines(standard_price)
-      `)
+      .select(`*, medicine:medicines(standard_price)`)
       .eq('cart_id', cartId)
       .eq('pharmacy_id', pharmacyId)
       .eq('status', 'reserved');
 
     if (!cartItems || cartItems.length === 0) throw new Error('Cart is empty for this pharmacy');
 
-    const total = cartItems.reduce((sum, item) => sum + (Number(item.medicine.standard_price || 0) * item.quantity), 0);
+    const subtotal = cartItems.reduce((sum, item) => sum + (Number(item.medicine?.standard_price || 0) * item.quantity), 0);
+    const total = subtotal + DELIVERY_FEE;
 
-    // 2. Create the Order
+    // 2. Create the Order with payment & delivery info
     const { data: order, error: orderErr } = await supabase
       .from('orders')
       .insert([{
@@ -243,7 +251,13 @@ export const cartApi = {
         user_id: user?.id,
         pharmacy_id: pharmacyId,
         total_amount: total,
+        delivery_fee: DELIVERY_FEE,
         status: 'pending',
+        payment_method: options.paymentMethod,
+        payment_status: 'pending',
+        delivery_method: options.deliveryMethod,
+        delivery_address: options.deliveryAddress || null,
+        delivery_notes: options.deliveryNotes || null,
         expires_at: expiresAt
       }])
       .select()
@@ -252,23 +266,49 @@ export const cartApi = {
     if (orderErr) throw orderErr;
 
     // 3. Create Order Items
-    const itemsToInsert = cartItems.map(ci => ({
-      order_id: order.id,
-      medicine_id: ci.medicine_id,
-      quantity: ci.quantity,
-      price_at_booking: ci.medicine.standard_price || 0
-    }));
+    await supabase.from('order_items').insert(
+      cartItems.map(ci => ({
+        order_id: order.id,
+        medicine_id: ci.medicine_id,
+        quantity: ci.quantity,
+        price_at_booking: ci.medicine?.standard_price || 0
+      }))
+    );
 
-    await supabase.from('order_items').insert(itemsToInsert);
-
-    // 4. Mark cart items as checked_out so they leave the active cart
+    // 4. Mark cart items as checked_out
     await supabase
       .from('cart_items')
       .update({ status: 'checked_out' })
       .eq('cart_id', cartId)
       .eq('pharmacy_id', pharmacyId);
 
-    return { message: 'Reservation confirmed', bookingRef, orderId: order.id, expiresAt };
+    // 5. If online payment — call the payment simulation RPC
+    let paymentStatus = 'pending';
+    let transactionId: string | undefined;
+
+    if (options.paymentMethod === 'online') {
+      const { data: payResult } = await supabase.rpc('process_online_payment', {
+        p_order_id: order.id,
+        p_card_last4: options.cardNumber?.slice(-4) || '0000'
+      });
+
+      if (!payResult?.success) {
+        throw new Error(payResult?.error || 'Payment failed. Please try again.');
+      }
+      paymentStatus = 'paid';
+      transactionId = payResult.transactionId;
+    }
+
+    return {
+      message: options.paymentMethod === 'online'
+        ? options.deliveryMethod === 'delivery' ? 'Payment confirmed! Delivery on the way.' : 'Payment confirmed! Ready for pickup.'
+        : options.deliveryMethod === 'delivery' ? 'Order placed! Pay driver on delivery.' : 'Booking confirmed! Visit pharmacy to collect.',
+      bookingRef,
+      orderId: order.id,
+      expiresAt,
+      paymentStatus,
+      transactionId
+    };
   },
 
   getOrders: async () => {
