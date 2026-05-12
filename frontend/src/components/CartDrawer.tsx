@@ -28,8 +28,21 @@ function formatCard(val: string) {
   return val.replace(/\D/g, '').substring(0, 16).replace(/(.{4})/g, '$1 ').trim();
 }
 function formatExpiry(val: string) {
+  // Strip everything except digits and slashes, keep only digits
   const digits = val.replace(/\D/g, '').substring(0, 4);
-  return digits.length >= 3 ? `${digits.substring(0, 2)}/${digits.substring(2)}` : digits;
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) return digits;
+  return `${digits.substring(0, 2)}/${digits.substring(2)}`;
+}
+
+function cardDigits(val: string) {
+  return val.replace(/\s/g, '').replace(/\D/g, '');
+}
+
+function isCardReady(cardNumber: string, cardExpiry: string, cardCvc: string) {
+  return cardDigits(cardNumber).length >= 13 &&
+    cardExpiry.includes('/') && cardExpiry.length >= 4 &&
+    cardCvc.length >= 3;
 }
 
 export default function CartDrawer() {
@@ -381,6 +394,11 @@ export default function CartDrawer() {
         {/* Step: Payment Method */}
         {step === 'payment-method' && (
           <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
+            {error && (
+              <div style={{ background: '#fef2f2', color: '#dc2626', padding: '12px 14px', borderRadius: 8, fontSize: 13, marginBottom: 16, fontWeight: 500, border: '1px solid #fca5a5' }}>
+                ⚠️ {error}
+              </div>
+            )}
             <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', marginBottom: 20 }}>
               How would you like to pay?
             </p>
@@ -408,12 +426,6 @@ export default function CartDrawer() {
               ))}
             </div>
 
-            {error && (
-              <div style={{ background: '#fef2f2', color: '#dc2626', padding: '10px 14px', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
-                {error}
-              </div>
-            )}
-
             <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 14, marginBottom: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 16 }}>
                 <span>Total</span><span>${grandTotal.toFixed(2)}</span>
@@ -433,6 +445,12 @@ export default function CartDrawer() {
         {/* Step: Card Details */}
         {step === 'card-details' && (
           <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
+            {/* Error shown at TOP so user always sees it */}
+            {error && (
+              <div style={{ background: '#fef2f2', color: '#dc2626', padding: '12px 14px', borderRadius: 8, fontSize: 13, marginBottom: 16, fontWeight: 500, border: '1px solid #fca5a5' }}>
+                ⚠️ {error}
+              </div>
+            )}
             <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: '#166534', marginBottom: 20 }}>
               🔒 Simulated secure payment · No real charges
             </div>
@@ -490,12 +508,6 @@ export default function CartDrawer() {
               </div>
             </div>
 
-            {error && (
-              <div style={{ background: '#fef2f2', color: '#dc2626', padding: '10px 14px', borderRadius: 8, fontSize: 13, marginTop: 16 }}>
-                {error}
-              </div>
-            )}
-
             <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 14, marginTop: 24, marginBottom: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 16 }}>
                 <span>Total to charge</span><span>${grandTotal.toFixed(2)}</span>
@@ -505,7 +517,7 @@ export default function CartDrawer() {
             <button
               className="btn btn-primary btn-full"
               onClick={handleFinalCheckout}
-              disabled={state.cardNumber.replace(/\s/g, '').length < 16 || !state.cardName || state.cardExpiry.length < 5 || state.cardCvc.length < 3}
+              disabled={!isCardReady(state.cardNumber, state.cardExpiry, state.cardCvc)}
               style={{ height: 44 }}
             >
               <FiDollarSign style={{ verticalAlign: 'middle', marginRight: 6 }} />
