@@ -139,13 +139,28 @@ CREATE TABLE IF NOT EXISTS order_items (
 
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view own orders" ON orders FOR SELECT USING (auth.uid() = user_id);
+-- Pharmacy owners can view all orders placed at their pharmacy
+CREATE POLICY "Pharmacy owners can view their orders" ON orders FOR SELECT USING (
+  pharmacy_id IN (SELECT id FROM pharmacies WHERE owner_id = auth.uid())
+);
 CREATE POLICY "Authenticated users can insert orders" ON orders FOR INSERT WITH CHECK (true);
 CREATE POLICY "Users can update own orders" ON orders FOR UPDATE USING (auth.uid() = user_id);
+-- Pharmacy owners can update order status (e.g. mark as collected)
+CREATE POLICY "Pharmacy owners can update their orders" ON orders FOR UPDATE USING (
+  pharmacy_id IN (SELECT id FROM pharmacies WHERE owner_id = auth.uid())
+);
 
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Order items open for insert" ON order_items FOR INSERT WITH CHECK (true);
 CREATE POLICY "Order items viewable via order" ON order_items FOR SELECT USING (
   order_id IN (SELECT id FROM orders WHERE user_id = auth.uid())
+);
+-- Pharmacy owners can view order items for their pharmacy's orders
+CREATE POLICY "Pharmacy owners can view order items" ON order_items FOR SELECT USING (
+  order_id IN (
+    SELECT id FROM orders
+    WHERE pharmacy_id IN (SELECT id FROM pharmacies WHERE owner_id = auth.uid())
+  )
 );
 
 -- Simulate online payment (marks order as paid)
@@ -176,6 +191,63 @@ BEGIN
     UPDATE orders SET payment_status = 'failed' WHERE id = p_order_id;
     RETURN jsonb_build_object('success', false, 'error', 'Card declined. Please try another card.');
   END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Lookup an order by booking ref for the calling pharmacist's pharmacy.
+-- Uses SECURITY DEFINER to bypass RLS (pharmacists are not the order's user_id).
+CREATE OR REPLACE FUNCTION get_order_for_pickup(p_booking_ref TEXT)
+RETURNS JSONB AS $$
+DECLARE
+  v_pharmacy_id UUID;
+  v_order JSONB;
+BEGIN
+  -- Resolve the calling user's pharmacy
+  SELECT id INTO v_pharmacy_id FROM pharmacies WHERE owner_id = auth.uid() LIMIT 1;
+  IF v_pharmacy_id IS NULL THEN
+    RAISE EXCEPTION 'No pharmacy linked to your account';
+  END IF;
+
+  SELECT jsonb_build_object(
+    'id',           o.id,
+    'booking_ref',  o.booking_ref,
+    'user_id',      o.user_id,
+    'pharmacy_id',  o.pharmacy_id,
+    'total_amount', o.total_amount,
+    'status',       o.status,
+    'created_at',   o.created_at,
+    'expires_at',   o.expires_at,
+    'items', (
+      SELECT jsonb_agg(jsonb_build_object(
+        'id',               oi.id,
+        'order_id',         oi.order_id,
+        'medicine_id',      oi.medicine_id,
+        'quantity',         oi.quantity,
+        'price_at_booking', oi.price_at_booking,
+        'medicine', jsonb_build_object(
+          'id',             m.id,
+          'generic_name',   m.generic_name,
+          'brand_name',     m.brand_name,
+          'dosage',         m.dosage,
+          'form',           m.form,
+          'category',       m.category
+        )
+      ))
+      FROM order_items oi
+      JOIN medicines m ON m.id = oi.medicine_id
+      WHERE oi.order_id = o.id
+    )
+  )
+  INTO v_order
+  FROM orders o
+  WHERE o.booking_ref = upper(p_booking_ref)
+    AND o.pharmacy_id = v_pharmacy_id;
+
+  IF v_order IS NULL THEN
+    RAISE EXCEPTION 'Booking not found for this pharmacy';
+  END IF;
+
+  RETURN v_order;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

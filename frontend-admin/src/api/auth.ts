@@ -331,22 +331,42 @@ export const adminApi = {
   },
 
   getOrder: async (bookingRef: string) => {
-    const pharmacyId = await getMyPharmacyId();
-    const { data, error } = await supabase
-      .from('orders')
-      .select(`
-        *,
-        items:order_items(
-          *,
-          medicine:medicines(*)
-        )
-      `)
-      .eq('booking_ref', bookingRef.toUpperCase())
-      .eq('pharmacy_id', pharmacyId)
-      .single();
+    // Use the SECURITY DEFINER RPC so RLS on orders/order_items doesn't
+    // block pharmacists (who are not the order's user_id).
+    const { data, error } = await supabase.rpc('get_order_for_pickup', {
+      p_booking_ref: bookingRef.toUpperCase(),
+    });
 
-    if (error) throw new Error('Booking not found for this pharmacy.');
-    return mapOrder(data);
+    if (error) throw new Error(error.message || 'Booking not found for this pharmacy.');
+    if (!data) throw new Error('Booking not found for this pharmacy.');
+
+    // The RPC returns a JSONB row — map it the same way as direct queries
+    const raw = data as any;
+    return {
+      id: raw.id,
+      bookingRef: raw.booking_ref,
+      userId: raw.user_id,
+      pharmacyId: raw.pharmacy_id,
+      totalAmount: Number(raw.total_amount),
+      status: raw.status,
+      createdAt: raw.created_at,
+      expiresAt: raw.expires_at,
+      items: (raw.items || []).map((item: any) => ({
+        id: item.id,
+        orderId: item.order_id,
+        medicineId: item.medicine_id,
+        quantity: item.quantity,
+        priceAtBooking: item.price_at_booking,
+        medicine: item.medicine ? {
+          id: item.medicine.id,
+          genericName: item.medicine.generic_name,
+          brandName: item.medicine.brand_name,
+          dosage: item.medicine.dosage,
+          form: item.medicine.form,
+          category: item.medicine.category,
+        } : null,
+      })),
+    };
   },
 
   collectOrder: async (bookingRef: string, items?: { medicineId: string; quantity: number; pharmacyId: string }[]) => {
