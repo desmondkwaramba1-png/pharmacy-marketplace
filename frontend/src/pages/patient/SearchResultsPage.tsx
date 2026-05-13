@@ -11,6 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 import type { SearchResult, StockStatus } from '../../types';
 import { FiSearch, FiX, FiMap, FiChevronLeft, FiWifiOff, FiPhone, FiBell, FiShoppingCart, FiLogIn } from 'react-icons/fi';
 import { FaMapMarkerAlt, FaPills } from 'react-icons/fa';
+import { MedicineIcon } from '../../utils/medicineIcon';
 
 function formatDistance(km: number | null | undefined): string {
   if (km == null) return '';
@@ -184,11 +185,7 @@ export default function SearchResultsPage() {
               tabIndex={0}
             >
               <div className="medicine-card-header" style={{ gap: 12 }}>
-                {result.imageUrl ? (
-                  <img src={result.imageUrl} alt={result.medicineName} style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', background: '#f5f5f5' }} loading="lazy" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5-7v-2h-2V8h-2v2H8v2h2v2h2v-2h2z'/%3E%3C/svg%3E"; }} />
-                ) : (
-                  <div className="medicine-icon"><FaPills color="var(--color-primary)" /></div>
-                )}
+                <MedicineIcon category={result.category} name={result.medicineName} imageUrl={result.imageUrl} size={48} borderRadius={12} />
                 <div style={{ flex: 1 }}>
                   <div className="medicine-name">{result.medicineName} {result.dosage && <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', fontWeight: 'normal' }}>{result.dosage}</span>}</div>
                   <div className="medicine-meta">

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth, RegisterPharmacyData } from '../context/AuthContext';
@@ -519,11 +519,11 @@ export default function AuthPage() {
   const returnTo = searchParams.get('returnTo') || '/';
   const message = searchParams.get('message');
 
-  // Already logged in → redirect to the right place immediately
-  if (isAuthenticated) {
-    navigate('/auth/redirect', { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (isAuthenticated) navigate('/auth/redirect', { replace: true });
+  }, [isAuthenticated, navigate]);
+
+  if (isAuthenticated) return null;
 
   const handleLoginSuccess = () => {
     // Auth state updates async via onAuthStateChange; navigate to redirect helper

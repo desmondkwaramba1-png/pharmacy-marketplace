@@ -8,6 +8,7 @@ import { SkeletonList } from '../../components/ui/SkeletonCard';
 import type { InventoryItem, StockStatus } from '../../types';
 import { FiSearch, FiX, FiPlus, FiSave, FiTrash2, FiBox } from 'react-icons/fi';
 import { FaCheckCircle, FaExclamationTriangle, FaTimesCircle } from 'react-icons/fa';
+import { MedicineIcon } from '../../utils/medicineIcon';
 
 const FILTERS: { label: React.ReactNode; value: string }[] = [
   { label: 'All', value: '' },
@@ -62,7 +63,7 @@ function AddMedicineModal({ onClose, onSave, isLoading }: { onClose: () => void;
             </select>
           </div>
           <div className="form-group">
-            <label className="form-label">Image (Optional)</label>
+            <label className="form-label">Image <span style={{ fontWeight: 400, color: 'var(--color-text-secondary)' }}>— Optional, leave blank for auto icon</span></label>
             <input className="form-input" type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
           </div>
           <div className="form-group">
@@ -258,13 +259,7 @@ export default function InventoryPage() {
             return (
               <div key={item.id} className="inventory-item">
                 <div className="inventory-item-header" style={{ display: 'flex', gap: 12 }}>
-                  {item.medicine.imageUrl ? (
-                    <img src={item.medicine.imageUrl} alt={item.medicine.genericName} style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', background: '#f0f0f0' }} />
-                  ) : (
-                    <div style={{ width: 40, height: 40, borderRadius: 8, background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
-                      <FiBox color="var(--color-primary)" />
-                    </div>
-                  )}
+                  <MedicineIcon category={item.medicine.category} name={item.medicine.genericName} imageUrl={item.medicine.imageUrl} size={40} borderRadius={8} />
                   <div style={{ flex: 1 }}>
                     <div className="inventory-item-name">{item.medicine.genericName} {item.medicine.dosage && <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', fontWeight: 'normal' }}>{item.medicine.dosage}</span>}</div>
                     <div className="inventory-item-meta">
