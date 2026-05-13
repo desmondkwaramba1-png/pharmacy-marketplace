@@ -1,21 +1,12 @@
-import { NavLink, useNavigate } from 'react-router-dom';
-import { FiSearch, FiMap, FiClock, FiHeart, FiSettings, FiHelpCircle, FiShoppingBag } from 'react-icons/fi';
-import { FaPills } from 'react-icons/fa';
+import { NavLink } from 'react-router-dom';
+import { FiSearch, FiMap, FiClock, FiHeart, FiHelpCircle } from 'react-icons/fi';
 
 export default function Sidebar() {
-  const navigate = useNavigate();
   const menuItems = [
     { to: '/', label: 'Search Medicines', icon: <FiSearch /> },
     { to: '/map', label: 'Pharmacy Map', icon: <FiMap /> },
     { to: '/reservations', label: 'My Bookings', icon: <FiClock /> },
-    { to: '/favorites', label: 'Favorites', icon: <FiHeart /> },
-  ];
-
-  const categoryItems = [
-    { label: 'Pain Relief', icon: '💊' },
-    { label: 'Antibiotics', icon: '🦠' },
-    { label: 'Chronic Care', icon: '❤️' },
-    { label: 'Vitamins', icon: '⚡' },
+    { to: '/favorites', label: 'Favourites', icon: <FiHeart /> },
   ];
 
   return (
@@ -41,37 +32,10 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      <div className="sidebar-section">
-        <span className="sidebar-section-title">Categories</span>
-        <div className="sidebar-categories">
-          {categoryItems.map((cat) => (
-            <button 
-              key={cat.label} 
-              className="sidebar-category-btn"
-              onClick={() => navigate(`/search?q=${encodeURIComponent(cat.label)}`)}
-            >
-              <span className="cat-icon">{cat.icon}</span>
-              <span className="cat-label">{cat.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
       <div className="sidebar-footer">
         <NavLink to="/help" className="sidebar-link">
           <FiHelpCircle /> <span>Support</span>
         </NavLink>
-        <NavLink to="/settings" className="sidebar-link">
-          <FiSettings /> <span>Settings</span>
-        </NavLink>
-      </div>
-
-      <div className="sidebar-promo">
-        <div className="promo-card">
-          <FiShoppingBag className="promo-icon" />
-          <p>Download our mobile app for better experience</p>
-          <button className="btn btn-sm btn-full btn-primary" style={{ marginTop: 8 }}>Get App</button>
-        </div>
       </div>
     </aside>
   );
