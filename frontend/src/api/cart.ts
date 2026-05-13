@@ -116,6 +116,11 @@ async function getOrCreateCartId(): Promise<string> {
 
 let cachedCartId: string | null = null;
 
+export function resetCartCache() {
+  cachedCartId = null;
+  localStorage.removeItem('medifind_session_id');
+}
+
 export const cartApi = {
   getCart: async (): Promise<CartResponse> => {
     if (!cachedCartId) {

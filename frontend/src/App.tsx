@@ -1,27 +1,45 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import React, { Suspense, lazy } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
 import OfflineBanner from './components/OfflineBanner';
 import InstallPWABanner from './components/InstallPWABanner';
 import BottomNav from './components/BottomNav';
 import CartDrawer from './components/CartDrawer';
 import { CartProvider } from './context/CartContext';
-
 import { Toaster } from 'react-hot-toast';
 
-// Lazy load all pages for code splitting
+import DesktopNav from './components/DesktopNav';
+import Sidebar from './components/Sidebar';
+import AdminSidebar from './components/AdminSidebar';
+import AdminNav from './components/AdminNav';
+
+// Public
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const AuthPage = lazy(() => import('./pages/AuthPage'));
+const AccountPage = lazy(() => import('./pages/AuthPage').then(m => ({ default: m.AccountPage })));
+
+// Patient pages
 const HomePage = lazy(() => import('./pages/patient/HomePage'));
 const SearchResultsPage = lazy(() => import('./pages/patient/SearchResultsPage'));
 const MedicineDetailPage = lazy(() => import('./pages/patient/MedicineDetailPage'));
 const MapViewPage = lazy(() => import('./pages/patient/MapViewPage'));
-const LoginPage = lazy(() => import('./pages/patient/LoginPage'));
 const MyReservationsPage = lazy(() => import('./pages/patient/MyReservationsPage'));
 const FavoritesPage = lazy(() => import('./pages/patient/PlaceholderPages').then(m => ({ default: m.default })));
 const SettingsPage = lazy(() => import('./pages/patient/PlaceholderPages').then(m => ({ default: m.SettingsPage })));
 const HelpPage = lazy(() => import('./pages/patient/PlaceholderPages').then(m => ({ default: m.HelpPage })));
 
-import DesktopNav from './components/DesktopNav';
-import Sidebar from './components/Sidebar';
+// Admin pages
+const AdminDashboardPage = lazy(() => import('./pages/admin/DashboardPage'));
+const AdminInventoryPage = lazy(() => import('./pages/admin/InventoryPage'));
+const AdminPickupPage = lazy(() => import('./pages/admin/PickupPortalPage'));
+const AdminProfilePage = lazy(() => import('./pages/admin/ProfilePage'));
+
+const Loading = () => (
+  <div className="empty-state" style={{ minHeight: '60vh' }}>
+    <div className="empty-state-icon">💊</div>
+    <p style={{ color: 'var(--color-text-secondary)', fontSize: 14 }}>Loading...</p>
+  </div>
+);
 
 function PatientLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -39,36 +57,154 @@ function PatientLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-const Loading = () => (
-  <div className="empty-state" style={{ minHeight: '60vh' }}>
-    <div className="empty-state-icon">💊</div>
-    <p style={{ color: 'var(--color-text-secondary)', fontSize: 14 }}>Loading...</p>
-  </div>
-);
+function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="app-shell">
+      {/* Desktop: sidebar. Mobile: top header + bottom nav via AdminNav */}
+      <AdminSidebar />
+      <div className="desktop-main-wrapper admin-main-wrapper">
+        <AdminNav />
+        <OfflineBanner />
+        <div className="admin-page-content">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Root: landing for guests, patient home for patients, redirect for pharmacists
+function RootRoute() {
+  const { isAuthenticated, isPharmacist, isLoading } = useAuth();
+  if (isLoading) return <Loading />;
+  if (!isAuthenticated) return <LandingPage />;
+  if (isPharmacist) return <Navigate to="/admin/dashboard" replace />;
+  return (
+    <PatientLayout>
+      <Suspense fallback={<Loading />}>
+        <HomePage />
+      </Suspense>
+    </PatientLayout>
+  );
+}
+
+// Guard for patient sub-routes (not root)
+function PatientGuard({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isPharmacist, isLoading } = useAuth();
+  if (isLoading) return <Loading />;
+  if (!isAuthenticated) return <Navigate to="/" replace />;
+  if (isPharmacist) return <Navigate to="/admin/dashboard" replace />;
+  return <>{children}</>;
+}
+
+// Protect admin routes
+function AdminGuard({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isPharmacist, isLoading } = useAuth();
+  if (isLoading) return <Loading />;
+  if (!isAuthenticated) return <Navigate to="/" replace />;
+  if (!isPharmacist) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
+// Post-login redirect based on role.
+// Reads role directly from Supabase so it picks up metadata updated by
+// registerPharmacy's updateUser call even before onAuthStateChange fires.
+function LoginRedirect() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isLoading || !isAuthenticated) return;
+    import('./api/supabaseClient').then(({ supabase }) => {
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        const role = user?.user_metadata?.role;
+        navigate(role === 'pharmacist' ? '/admin/dashboard' : '/home', { replace: true });
+      });
+    });
+  }, [isAuthenticated, isLoading, navigate]);
+
+  return <Loading />;
+}
 
 export default function App() {
   return (
     <CartProvider>
       <BrowserRouter>
-        <PatientLayout>
-          <Suspense fallback={<Loading />}>
-            <Routes>
-              {/* Patient routes */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/search" element={<SearchResultsPage />} />
-              <Route path="/medicine/:id" element={<MedicineDetailPage />} />
-              <Route path="/map" element={<MapViewPage />} />
-              <Route path="/reservations" element={<MyReservationsPage />} />
-              <Route path="/favorites" element={<FavoritesPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/help" element={<HelpPage />} />
+        <Suspense fallback={<Loading />}>
+          <Routes>
+            {/* Root — smart: landing / patient home / admin redirect */}
+            <Route path="/" element={<RootRoute />} />
 
-              <Route path="/login" element={<LoginPage />} />
+            {/* Auth */}
+            <Route path="/login" element={<AuthPage />} />
+            <Route path="/pharmacy/register" element={<Navigate to="/login?tab=pharmacy" replace />} />
+            <Route path="/auth/redirect" element={<LoginRedirect />} />
 
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
-        </PatientLayout>
+            {/* Admin */}
+            <Route path="/admin/*" element={
+              <AdminGuard>
+                <AdminLayout>
+                  <Routes>
+                    <Route path="dashboard" element={<AdminDashboardPage />} />
+                    <Route path="inventory" element={<AdminInventoryPage />} />
+                    <Route path="pickups" element={<AdminPickupPage />} />
+                    <Route path="profile" element={<AdminProfilePage />} />
+                    <Route path="*" element={<Navigate to="dashboard" replace />} />
+                  </Routes>
+                </AdminLayout>
+              </AdminGuard>
+            } />
+
+            {/* Patient app (requires login) */}
+            <Route path="/home" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><HomePage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+            <Route path="/search" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><SearchResultsPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+            <Route path="/medicine/:id" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><MedicineDetailPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+            <Route path="/map" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><MapViewPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+            <Route path="/reservations" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><MyReservationsPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+            <Route path="/favorites" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><FavoritesPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+            <Route path="/settings" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><SettingsPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+            <Route path="/help" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><HelpPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+            <Route path="/account" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><AccountPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
         <Toaster position="top-center" />
       </BrowserRouter>
     </CartProvider>

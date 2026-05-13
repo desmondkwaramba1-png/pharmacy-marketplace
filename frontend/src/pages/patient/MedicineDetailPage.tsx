@@ -84,6 +84,9 @@ export default function MedicineDetailPage() {
     );
   }
 
+  const requiresRx = medicine.requiresPrescription || medicine.distributionCategory === 'PP';
+  const isBanned   = medicine.isBanned;
+
   const available = medicine.availability.filter((a) => a.stockStatus !== 'out_of_stock');
   const outOfStock = medicine.availability.filter((a) => a.stockStatus === 'out_of_stock');
 
@@ -98,6 +101,32 @@ export default function MedicineDetailPage() {
           aria-label="View on map"
         ><FiMap /></button>
       </header>
+
+      {/* MCAZ compliance banners */}
+      {isBanned && (
+        <div style={{ background: '#fee2e2', borderLeft: '4px solid #dc2626', padding: '12px 16px', margin: '0 16px 8px', borderRadius: 8 }}>
+          <strong style={{ color: '#dc2626' }}>⚠️ Banned / Withdrawn</strong>
+          <p style={{ margin: '4px 0 0', fontSize: 13, color: '#7f1d1d' }}>
+            This product has been withdrawn from the MCAZ register and cannot be dispensed.
+          </p>
+        </div>
+      )}
+      {!isBanned && requiresRx && (
+        <div style={{ background: '#fef3c7', borderLeft: '4px solid #d97706', padding: '12px 16px', margin: '0 16px 8px', borderRadius: 8 }}>
+          <strong style={{ color: '#92400e' }}>🔒 Prescription Required (PP)</strong>
+          <p style={{ margin: '4px 0 0', fontSize: 13, color: '#78350f' }}>
+            This is a Prescription Preparation medicine regulated by MCAZ. A valid prescription must be uploaded at checkout and verified by the dispensing pharmacist.
+          </p>
+        </div>
+      )}
+      {!isBanned && medicine.distributionCategory === 'PIM' && (
+        <div style={{ background: '#eff6ff', borderLeft: '4px solid #3b82f6', padding: '12px 16px', margin: '0 16px 8px', borderRadius: 8 }}>
+          <strong style={{ color: '#1e40af' }}>ℹ️ Pharmacist Initiative Medicine (PIM)</strong>
+          <p style={{ margin: '4px 0 0', fontSize: 13, color: '#1e3a8a' }}>
+            This medicine should be dispensed under pharmacist guidance.
+          </p>
+        </div>
+      )}
 
       {/* Hero */}
       <div className="medicine-detail-hero" style={{ flexDirection: 'column', alignItems: 'center', gap: 16 }}>
@@ -184,20 +213,13 @@ export default function MedicineDetailPage() {
               </div>
               <div className="last-updated">Updated {timeAgo(avail.lastUpdated)}</div>
               <div className="pharmacy-avail-actions" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {isAuthenticated ? (
-                  <button 
-                    className="btn btn-primary btn-sm" 
-                    style={{ flex: 1, minWidth: '120px' }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addToCart(avail.pharmacyId, medicine.id);
-                    }}
-                  >
-                    <FiShoppingCart /> Add to Cart
+                {isBanned ? (
+                  <button className="btn btn-sm" disabled style={{ flex: 1, minWidth: '120px', opacity: 0.5, cursor: 'not-allowed', background: '#dc2626', color: '#fff' }}>
+                    ⚠️ Unavailable
                   </button>
-                ) : (
-                  <button 
-                    className="btn btn-primary btn-sm" 
+                ) : !isAuthenticated ? (
+                  <button
+                    className="btn btn-primary btn-sm"
                     style={{ flex: 1, minWidth: '120px' }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -205,6 +227,28 @@ export default function MedicineDetailPage() {
                     }}
                   >
                     <FiLogIn /> Sign In to Reserve
+                  </button>
+                ) : requiresRx ? (
+                  <button
+                    className="btn btn-sm"
+                    style={{ flex: 1, minWidth: '120px', background: '#d97706', color: '#fff' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(avail.pharmacyId, medicine.id);
+                    }}
+                  >
+                    🔒 Reserve (Rx required)
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-primary btn-sm"
+                    style={{ flex: 1, minWidth: '120px' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(avail.pharmacyId, medicine.id);
+                    }}
+                  >
+                    <FiShoppingCart /> Add to Cart
                   </button>
                 )}
                 <div style={{ display: 'flex', gap: '8px', flex: 1 }}>
