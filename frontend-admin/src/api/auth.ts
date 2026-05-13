@@ -40,6 +40,7 @@ const mapOrder = (order: any): any => ({
   status: order.status,
   createdAt: order.created_at,
   expiresAt: order.expires_at,
+  pharmacy: order.pharmacy ?? null,
   items: (order.items || []).map(mapOrderItem)
 });
 
@@ -331,40 +332,21 @@ export const adminApi = {
   },
 
   getOrder: async (bookingRef: string) => {
-    const { data, error } = await supabase.rpc('get_order_for_pickup', {
-      p_booking_ref: bookingRef.toUpperCase(),
-    });
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        pharmacy:pharmacies(id, name, address),
+        items:order_items(
+          *,
+          medicine:medicines(id, generic_name, brand_name, dosage, form, category)
+        )
+      `)
+      .eq('booking_ref', bookingRef.toUpperCase())
+      .single();
 
-    if (error) throw new Error(error.message || 'Booking not found for this pharmacy.');
-    if (!data) throw new Error('Booking not found for this pharmacy.');
-
-    const raw = data as any;
-    return {
-      id: raw.id,
-      bookingRef: raw.booking_ref,
-      userId: raw.user_id,
-      pharmacyId: raw.pharmacy_id,
-      totalAmount: Number(raw.total_amount),
-      status: raw.status,
-      createdAt: raw.created_at,
-      expiresAt: raw.expires_at,
-      pharmacy: raw.pharmacy ?? null,
-      items: (raw.items || []).map((item: any) => ({
-        id: item.id,
-        orderId: item.order_id,
-        medicineId: item.medicine_id,
-        quantity: item.quantity,
-        priceAtBooking: item.price_at_booking,
-        medicine: item.medicine ? {
-          id: item.medicine.id,
-          genericName: item.medicine.generic_name,
-          brandName: item.medicine.brand_name,
-          dosage: item.medicine.dosage,
-          form: item.medicine.form,
-          category: item.medicine.category,
-        } : null,
-      })),
-    };
+    if (error || !data) throw new Error('Booking reference not found.');
+    return mapOrder(data);
   },
 
   collectOrder: async (bookingRef: string, items?: { medicineId: string; quantity: number; pharmacyId: string }[]) => {

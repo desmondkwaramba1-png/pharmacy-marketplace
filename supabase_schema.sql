@@ -139,13 +139,12 @@ CREATE TABLE IF NOT EXISTS order_items (
 
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view own orders" ON orders FOR SELECT USING (auth.uid() = user_id);
--- Pharmacy owners can view all orders placed at their pharmacy
+CREATE POLICY "Authenticated users can view any order" ON orders FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Pharmacy owners can view their orders" ON orders FOR SELECT USING (
   pharmacy_id IN (SELECT id FROM pharmacies WHERE owner_id = auth.uid())
 );
 CREATE POLICY "Authenticated users can insert orders" ON orders FOR INSERT WITH CHECK (true);
 CREATE POLICY "Users can update own orders" ON orders FOR UPDATE USING (auth.uid() = user_id);
--- Pharmacy owners can update order status (e.g. mark as collected)
 CREATE POLICY "Pharmacy owners can update their orders" ON orders FOR UPDATE USING (
   pharmacy_id IN (SELECT id FROM pharmacies WHERE owner_id = auth.uid())
 );
@@ -155,7 +154,7 @@ CREATE POLICY "Order items open for insert" ON order_items FOR INSERT WITH CHECK
 CREATE POLICY "Order items viewable via order" ON order_items FOR SELECT USING (
   order_id IN (SELECT id FROM orders WHERE user_id = auth.uid())
 );
--- Pharmacy owners can view order items for their pharmacy's orders
+CREATE POLICY "Authenticated users can view any order item" ON order_items FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Pharmacy owners can view order items" ON order_items FOR SELECT USING (
   order_id IN (
     SELECT id FROM orders
