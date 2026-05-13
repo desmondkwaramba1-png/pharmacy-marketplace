@@ -201,7 +201,7 @@ function PharmacyForm({ onSuccess }: { onSuccess: (pharmacyName: string) => void
     setLoading(true);
     try {
       await registerPharmacy(form);
-      navigate('/admin/dashboard', { replace: true });
+      navigate('/auth/redirect', { replace: true });
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
     } finally {

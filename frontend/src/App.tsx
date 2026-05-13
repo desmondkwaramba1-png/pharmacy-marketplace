@@ -102,15 +102,23 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// Post-login redirect based on role
+// Post-login redirect based on role.
+// Reads role directly from Supabase so it picks up metadata updated by
+// registerPharmacy's updateUser call even before onAuthStateChange fires.
 function LoginRedirect() {
-  const { isAuthenticated, isPharmacist, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      navigate(isPharmacist ? '/admin/dashboard' : '/home', { replace: true });
-    }
-  }, [isAuthenticated, isPharmacist, isLoading, navigate]);
+    if (isLoading || !isAuthenticated) return;
+    import('./api/supabaseClient').then(({ supabase }) => {
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        const role = user?.user_metadata?.role;
+        navigate(role === 'pharmacist' ? '/admin/dashboard' : '/home', { replace: true });
+      });
+    });
+  }, [isAuthenticated, isLoading, navigate]);
+
   return <Loading />;
 }
 
