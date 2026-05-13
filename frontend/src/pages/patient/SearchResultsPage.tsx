@@ -9,7 +9,7 @@ import { SkeletonList } from '../../components/ui/SkeletonCard';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import type { SearchResult, StockStatus } from '../../types';
-import { FiSearch, FiX, FiMap, FiChevronLeft, FiWifiOff, FiPhone, FiBell, FiShoppingCart, FiLogIn } from 'react-icons/fi';
+import { FiSearch, FiX, FiMap, FiChevronLeft, FiWifiOff, FiPhone, FiBell, FiShoppingCart, FiLogIn, FiFilter } from 'react-icons/fi';
 import { FaMapMarkerAlt, FaPills } from 'react-icons/fa';
 
 function formatDistance(km: number | null | undefined): string {
@@ -22,16 +22,16 @@ function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins} min ago`;
+  if (mins < 60) return `${mins}m ago`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-const FILTERS: { label: string; value: string }[] = [
-  { label: 'All', value: '' },
-  { label: '✅ In Stock', value: 'in_stock' },
-  { label: '⚠️ Low Stock', value: 'low_stock' },
+const FILTERS: { label: string; value: string; icon: string }[] = [
+  { label: 'All',       value: '',          icon: '💊' },
+  { label: 'In Stock',  value: 'in_stock',  icon: '✅' },
+  { label: 'Low Stock', value: 'low_stock', icon: '⚠️' },
 ];
 
 export default function SearchResultsPage() {
@@ -40,8 +40,8 @@ export default function SearchResultsPage() {
   const { coords } = useGeolocation();
 
   const urlQuery = searchParams.get('q') || '';
-  const urlLat = searchParams.get('lat');
-  const urlLng = searchParams.get('lng');
+  const urlLat   = searchParams.get('lat');
+  const urlLng   = searchParams.get('lng');
 
   const { cart, setCartOpen, addToCart } = useCart();
   const { isAuthenticated } = useAuth();
@@ -73,13 +73,8 @@ export default function SearchResultsPage() {
     if (result.latitude && result.longitude) {
       navigate(`/map?destLat=${result.latitude}&destLng=${result.longitude}`);
     } else {
-      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(result.pharmacyName + ' ' + result.address + ' Zimbabwe')}`;
-      window.open(url, '_blank');
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(result.pharmacyName + ' ' + result.address + ' Zimbabwe')}`, '_blank');
     }
-  };
-
-  const callPharmacy = (phone?: string) => {
-    if (phone) window.location.href = `tel:${phone}`;
   };
 
   return (
@@ -100,21 +95,32 @@ export default function SearchResultsPage() {
             <button type="button" className="clear-btn" onClick={() => setSearchInput('')}><FiX /></button>
           )}
         </form>
-        <button className="btn-icon" onClick={() => navigate('/map')} title="View Map" aria-label="Map view"><FiMap /></button>
-        <button 
-          className="btn-icon" 
+        <button
+          className="btn-icon"
+          onClick={() => navigate('/map')}
+          title="View Map"
+          aria-label="Map view"
+        >
+          <FiMap />
+        </button>
+        <button
+          className="btn-icon"
           onClick={() => {
-            if (isAuthenticated) {
-              setCartOpen(true);
-            } else {
-              navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}&message=${encodeURIComponent('Please sign in to access your cart and personalized experience')}`);
-            }
-          }} 
+            if (isAuthenticated) setCartOpen(true);
+            else navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+          }}
           style={{ position: 'relative' }}
+          aria-label="Cart"
         >
           <FiShoppingCart />
           {cart && cart.itemCount > 0 && (
-            <span style={{ position: 'absolute', top: 4, right: 4, background: 'var(--color-error)', color: 'white', fontSize: 10, width: 16, height: 16, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{
+              position: 'absolute', top: 4, right: 4,
+              background: 'var(--color-error)', color: 'white',
+              fontSize: 9, width: 16, height: 16, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 700, border: '1.5px solid white',
+            }}>
               {cart.itemCount}
             </span>
           )}
@@ -123,14 +129,14 @@ export default function SearchResultsPage() {
 
       <div className="page-content">
         {/* Filters */}
-        <div className="filter-pills" style={{ marginBottom: 12 }}>
+        <div className="filter-pills" style={{ marginBottom: 14 }}>
           {FILTERS.map((f) => (
             <button
               key={f.value}
               className={`pill ${activeFilter === f.value ? 'active' : ''}`}
               onClick={() => setActiveFilter(f.value)}
             >
-              {f.label}
+              {f.icon} {f.label}
             </button>
           ))}
         </div>
@@ -138,7 +144,7 @@ export default function SearchResultsPage() {
         {/* Results count */}
         {data && (
           <p className="results-count">
-            Found <strong>{data.total}</strong> result{data.total !== 1 ? 's' : ''} for "{data.query}" — sorted by distance
+            <strong>{data.total}</strong> result{data.total !== 1 ? 's' : ''} for "<strong>{data.query}</strong>" — nearest first
           </p>
         )}
 
@@ -159,7 +165,7 @@ export default function SearchResultsPage() {
           <div className="empty-state">
             <div className="empty-state-icon"><FiSearch /></div>
             <div className="empty-state-title">Start typing to search</div>
-            <div className="empty-state-text">Enter at least 2 characters to find medicines</div>
+            <div className="empty-state-text">Enter at least 2 characters to find medicines near you</div>
           </div>
         )}
 
@@ -183,40 +189,66 @@ export default function SearchResultsPage() {
               role="button"
               tabIndex={0}
             >
+              {/* Medicine identity */}
               <div className="medicine-card-header" style={{ gap: 12 }}>
                 {result.imageUrl ? (
-                  <img src={result.imageUrl} alt={result.medicineName} style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', background: '#f5f5f5' }} loading="lazy" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5-7v-2h-2V8h-2v2H8v2h2v2h2v-2h2z'/%3E%3C/svg%3E"; }} />
+                  <img
+                    src={result.imageUrl}
+                    alt={result.medicineName}
+                    style={{ width: 52, height: 52, borderRadius: 12, objectFit: 'cover', background: '#f5f5f5', flexShrink: 0 }}
+                    loading="lazy"
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5-7v-2h-2V8h-2v2H8v2h2v2h2v-2h2z'/%3E%3C/svg%3E"; }}
+                  />
                 ) : (
                   <div className="medicine-icon"><FaPills color="var(--color-primary)" /></div>
                 )}
-                <div style={{ flex: 1 }}>
-                  <div className="medicine-name">{result.medicineName} {result.dosage && <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', fontWeight: 'normal' }}>{result.dosage}</span>}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="medicine-name">
+                    {result.medicineName}
+                    {result.dosage && <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', fontWeight: 500 }}> {result.dosage}</span>}
+                  </div>
                   <div className="medicine-meta">
                     {[result.form, result.brandName, result.category].filter(Boolean).join(' · ')}
                   </div>
                 </div>
               </div>
 
+              {/* Pharmacy info */}
               <div className="medicine-card-pharmacy">
-                <span style={{ fontSize: 16, marginTop: 1, color: 'var(--color-primary)' }}><FaMapMarkerAlt /></span>
+                <span style={{ fontSize: 15, marginTop: 1, color: 'var(--color-primary)', flexShrink: 0 }}><FaMapMarkerAlt /></span>
                 <div className="pharmacy-info">
-                  <div className="pharmacy-name" style={{ fontSize: '15px', fontWeight: 600 }}>{result.pharmacyName}</div>
-                  <div className="pharmacy-address" style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
-                    {result.address}{result.suburb ? `, ${result.suburb}` : ''}
-                  </div>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', background: 'var(--color-bg)', padding: '8px 12px', borderRadius: '8px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', textTransform: 'uppercase', fontWeight: 600 }}>Price</span>
-                      <span className="medicine-price" style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-primary)' }}>
+                  <div className="pharmacy-name">{result.pharmacyName}</div>
+                  <div className="pharmacy-address">{result.address}{result.suburb ? `, ${result.suburb}` : ''}</div>
+
+                  {/* Price + availability row */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    marginTop: 10, marginBottom: 6,
+                    background: 'var(--color-bg)', padding: '10px 12px',
+                    borderRadius: 10, border: '1px solid var(--color-border)',
+                  }}>
+                    <div>
+                      <div style={{ fontSize: 10, color: 'var(--color-text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Price</div>
+                      <div className="medicine-price">
                         {result.price != null ? `$${result.price.toFixed(2)}` : 'N/A'}
-                      </span>
+                      </div>
                     </div>
-                    <div style={{ height: '30px', width: '1px', background: 'var(--color-border)' }}></div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                       <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', textTransform: 'uppercase', fontWeight: 600 }}>Availability</span>
-                       <Badge status={result.stockStatus as StockStatus} />
+                    <div style={{ width: 1, height: 28, background: 'var(--color-border)' }} />
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 10, color: 'var(--color-text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Stock</div>
+                      <Badge status={result.stockStatus as StockStatus} />
                     </div>
+                    {result.distance != null && (
+                      <>
+                        <div style={{ width: 1, height: 28, background: 'var(--color-border)' }} />
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: 10, color: 'var(--color-text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Distance</div>
+                          <span className="distance-chip" style={{ background: 'transparent', border: 'none', padding: 0, fontSize: 13, fontWeight: 600 }}>
+                            {formatDistance(result.distance)}
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   <div className="last-updated">Updated {timeAgo(result.lastUpdated)}</div>
@@ -227,47 +259,38 @@ export default function SearchResultsPage() {
               <div
                 className="card-actions"
                 onClick={(e) => e.stopPropagation()}
-                style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}
+                style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}
               >
                 {result.stockStatus !== 'out_of_stock' ? (
                   isAuthenticated ? (
-                    <button 
-                      className="btn btn-primary" 
-                      style={{ flex: 1, minWidth: '120px' }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addToCart(result.pharmacyId, result.medicineId);
-                      }}
+                    <button
+                      className="btn btn-primary"
+                      style={{ flex: 1, minWidth: 120 }}
+                      onClick={(e) => { e.stopPropagation(); addToCart(result.pharmacyId, result.medicineId); }}
                     >
-                      <FiShoppingCart /> Add to Cart
+                      <FiShoppingCart size={15} /> Add to Cart
                     </button>
                   ) : (
-                    <button 
-                      className="btn btn-primary" 
-                      style={{ flex: 1, minWidth: '120px' }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
-                      }}
+                    <button
+                      className="btn btn-primary"
+                      style={{ flex: 1, minWidth: 120 }}
+                      onClick={(e) => { e.stopPropagation(); navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`); }}
                     >
-                      <FiLogIn /> Sign In to Reserve
+                      <FiLogIn size={15} /> Sign In to Reserve
                     </button>
                   )
                 ) : (
-                  <button className="btn btn-secondary" style={{ flex: 1, minWidth: '120px' }} disabled>
-                    <FiBell /> Notify Me
+                  <button className="btn btn-secondary" style={{ flex: 1, minWidth: 120 }} disabled>
+                    <FiBell size={15} /> Notify Me
                   </button>
                 )}
 
-                <button 
-                  className="btn btn-secondary" 
-                  style={{ flex: 1, minWidth: '120px' }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    getDirections(result);
-                  }}
+                <button
+                  className="btn btn-secondary"
+                  style={{ flex: 1, minWidth: 120 }}
+                  onClick={(e) => { e.stopPropagation(); getDirections(result); }}
                 >
-                  <FaMapMarkerAlt /> Directions
+                  <FaMapMarkerAlt size={14} /> Directions
                 </button>
               </div>
             </div>
