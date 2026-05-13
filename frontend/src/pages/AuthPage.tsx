@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 import { cartApi } from '../api/cart';
 import {
   FiChevronLeft, FiLogOut, FiShoppingCart, FiClock,
-  FiCheckCircle, FiPackage, FiInfo, FiArrowRight, FiArrowLeft, FiCheck,
+  FiCheckCircle, FiPackage, FiInfo, FiArrowRight, FiArrowLeft, FiCheck, FiMapPin,
 } from 'react-icons/fi';
 import { FaPills, FaUserCircle, FaClinicMedical } from 'react-icons/fa';
 
@@ -165,14 +165,33 @@ function PatientForm({ onSuccess }: { onSuccess: () => void }) {
 
 // ── Pharmacy registration (2-step) ────────────────────────────────────────────
 function PharmacyForm({ onSuccess }: { onSuccess: (pharmacyName: string) => void }) {
+  const navigate = useNavigate();
   const { registerPharmacy } = useAuth();
   const [step, setStep] = useState<PharmacyStep>('account');
   const [form, setForm] = useState<RegisterPharmacyData>({
     email: '', password: '', firstName: '', lastName: '',
     pharmacyName: '', address: '', suburb: '', city: '', phone: '',
+    latitude: undefined, longitude: undefined,
   });
+  const [locStatus, setLocStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const getLocation = () => {
+    if (!navigator.geolocation) {
+      setLocStatus('error');
+      return;
+    }
+    setLocStatus('loading');
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        setForm(f => ({ ...f, latitude: pos.coords.latitude, longitude: pos.coords.longitude }));
+        setLocStatus('ok');
+      },
+      () => setLocStatus('error'),
+      { timeout: 10000, enableHighAccuracy: true },
+    );
+  };
 
   const set = (f: keyof RegisterPharmacyData) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(p => ({ ...p, [f]: e.target.value }));
@@ -182,8 +201,7 @@ function PharmacyForm({ onSuccess }: { onSuccess: (pharmacyName: string) => void
     setLoading(true);
     try {
       await registerPharmacy(form);
-      setStep('done');
-      onSuccess(form.pharmacyName);
+      navigate('/admin/dashboard', { replace: true });
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
     } finally {
@@ -261,6 +279,37 @@ function PharmacyForm({ onSuccess }: { onSuccess: (pharmacyName: string) => void
           <div className="form-group">
             <label className="form-label required">Street Address</label>
             <input className="form-input" value={form.address} onChange={set('address')} placeholder="e.g. 45 Samora Machel Ave" />
+          </div>
+
+          {/* Location picker */}
+          <div>
+            <label className="form-label" style={{ marginBottom: 6, display: 'block' }}>
+              Exact Location <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400 }}>(helps patients find you on the map)</span>
+            </label>
+            <button
+              type="button"
+              onClick={getLocation}
+              disabled={locStatus === 'loading'}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                padding: '10px 14px', borderRadius: 10, cursor: locStatus === 'loading' ? 'wait' : 'pointer',
+                border: `1.5px solid ${locStatus === 'ok' ? 'var(--color-success, #10B981)' : locStatus === 'error' ? 'var(--color-error, #ef4444)' : 'var(--color-border)'}`,
+                background: locStatus === 'ok' ? '#f0fdf4' : locStatus === 'error' ? '#fef2f2' : 'var(--color-bg)',
+                color: locStatus === 'ok' ? '#10B981' : locStatus === 'error' ? '#ef4444' : 'var(--color-text)',
+                fontSize: 13, fontWeight: 500, transition: 'all 0.15s',
+              }}
+            >
+              <FiMapPin size={16} style={{ flexShrink: 0 }} />
+              {locStatus === 'idle' && 'Use my current location'}
+              {locStatus === 'loading' && 'Getting location…'}
+              {locStatus === 'ok' && `Location set (${form.latitude?.toFixed(4)}, ${form.longitude?.toFixed(4)})`}
+              {locStatus === 'error' && 'Location unavailable — tap to retry'}
+            </button>
+            {locStatus === 'error' && (
+              <p style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 4, marginBottom: 0 }}>
+                Make sure you are at the pharmacy and allow location access in your browser.
+              </p>
+            )}
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
             <div className="form-group" style={{ flex: 1 }}>

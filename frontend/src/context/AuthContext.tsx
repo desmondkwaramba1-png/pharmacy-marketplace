@@ -23,6 +23,8 @@ export interface RegisterPharmacyData {
   suburb?: string;
   city: string;
   phone?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -94,8 +96,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phone: data.phone || null,
         owner_id: authData.user.id,
         is_active: true,
-        latitude: 0,
-        longitude: 0,
+        latitude: data.latitude ?? 0,
+        longitude: data.longitude ?? 0,
       }])
       .select()
       .single();
