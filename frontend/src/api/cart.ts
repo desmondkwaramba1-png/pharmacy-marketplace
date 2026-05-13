@@ -106,7 +106,7 @@ async function getOrCreateCartId(): Promise<string> {
   // 3. Create new cart
   const { data: newCart, error } = await supabase
     .from('carts')
-    .insert([{ user_id: user?.id, session_id: sessionId }])
+    .insert([{ user_id: user?.id || null, session_id: sessionId }])
     .select()
     .single();
 
@@ -115,6 +115,11 @@ async function getOrCreateCartId(): Promise<string> {
 }
 
 let cachedCartId: string | null = null;
+
+export function resetCartCache() {
+  cachedCartId = null;
+  localStorage.removeItem('medifind_session_id');
+}
 
 export const cartApi = {
   getCart: async (): Promise<CartResponse> => {
@@ -178,23 +183,34 @@ export const cartApi = {
     if (!cachedCartId) {
       cachedCartId = await getOrCreateCartId();
     }
-    const cartId = cachedCartId;
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-    // Use a high-speed RPC to handle everything in ONE database transaction
-    const { error: rpcErr } = await supabase.rpc('add_to_cart_v2', {
-      p_cart_id: cartId,
-      p_pharmacy_id: pId,
-      p_medicine_id: mId,
-      p_qty: qty,
-      p_expires_at: expiresAt
-    });
+    const attempt = async (cartId: string) => {
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+      const { error: rpcErr } = await supabase.rpc('add_to_cart_v2', {
+        p_cart_id: cartId,
+        p_pharmacy_id: pId,
+        p_medicine_id: mId,
+        p_qty: qty,
+        p_expires_at: expiresAt
+      });
+      return rpcErr;
+    };
 
-    if (rpcErr) {
-      if (rpcErr.code === 'P0001' || rpcErr.message?.includes('stock')) {
+    let err = await attempt(cachedCartId);
+
+    // Stale cart (DB was wiped) — reset and retry with a fresh cart
+    if (err && (err.message?.includes('foreign key') || err.code === '23503')) {
+      cachedCartId = null;
+      localStorage.removeItem('medifind_session_id');
+      cachedCartId = await getOrCreateCartId();
+      err = await attempt(cachedCartId);
+    }
+
+    if (err) {
+      if (err.code === 'P0001' || err.message?.includes('stock')) {
         throw new Error("Insufficient stock or already reserved.");
       }
-      throw new Error("Failed to add to cart: " + rpcErr.message);
+      throw new Error("Failed to add to cart: " + err.message);
     }
 
     return cartApi.getCart();

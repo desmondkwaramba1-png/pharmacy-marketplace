@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import { supabase } from '../api/supabaseClient';
+import { resetCartCache } from '../api/cart';
 import type { User } from '../types';
 
 interface AuthContextValue {
@@ -57,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
+    resetCartCache();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
   };

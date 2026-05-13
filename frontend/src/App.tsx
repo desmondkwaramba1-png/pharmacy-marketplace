@@ -11,6 +11,7 @@ import { Toaster } from 'react-hot-toast';
 import DesktopNav from './components/DesktopNav';
 import Sidebar from './components/Sidebar';
 import AdminSidebar from './components/AdminSidebar';
+import AdminNav from './components/AdminNav';
 
 // Public
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -59,8 +60,10 @@ function PatientLayout({ children }: { children: React.ReactNode }) {
 function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-shell">
+      {/* Desktop: sidebar. Mobile: top header + bottom nav via AdminNav */}
       <AdminSidebar />
       <div className="desktop-main-wrapper admin-main-wrapper">
+        <AdminNav />
         <OfflineBanner />
         <div className="admin-page-content">
           {children}

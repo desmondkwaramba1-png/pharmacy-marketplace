@@ -785,6 +785,22 @@ img { max-width: 100%; display: block; }
 /* ============================================================
    ADMIN HEADER
    ============================================================ */
+/* Mobile header — shown only on mobile */
+.admin-header-mobile {
+  height: 60px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Desktop header (legacy, kept for compat) */
 .admin-header {
   height: var(--header-height);
   background: var(--color-surface);
@@ -801,8 +817,17 @@ img { max-width: 100%; display: block; }
 
 .admin-header-left { display: flex; align-items: center; gap: 10px; }
 .admin-logo { font-size: 28px; }
-.admin-pharmacy-name { font-size: 14px; font-weight: 600; color: var(--color-text); }
-.admin-user-email { font-size: 12px; color: var(--color-text-secondary); }
+.admin-pharmacy-name { font-size: 14px; font-weight: 700; color: var(--color-text); }
+.admin-user-email { font-size: 11px; color: var(--color-text-secondary); }
+
+/* Mobile bottom nav for admin */
+.admin-bottom-nav { display: flex; }
+
+/* Hide mobile admin nav on desktop */
+@media (min-width: 1024px) {
+  .admin-header-mobile { display: none; }
+  .admin-bottom-nav { display: none; }
+}
 
 /* ============================================================
    ADMIN DASHBOARD
@@ -1645,7 +1670,7 @@ img { max-width: 100%; display: block; }
 }
 
 .admin-page-content {
-  padding: 24px 16px;
+  padding: 20px 16px calc(var(--bottom-nav-height) + 16px + env(safe-area-inset-bottom));
   max-width: 100%;
 }
 
