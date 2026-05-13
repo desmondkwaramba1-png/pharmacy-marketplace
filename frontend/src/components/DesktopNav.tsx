@@ -27,7 +27,7 @@ export default function DesktopNav() {
   return (
     <header className="desktop-nav-header">
       <div className="desktop-nav-container">
-        <NavLink to="/" className="desktop-nav-logo">
+        <NavLink to="/home" className="desktop-nav-logo">
           <div className="header-logo">💊</div>
           <span className="logo-text">MediFind <span className="text-secondary">ZW</span></span>
         </NavLink>

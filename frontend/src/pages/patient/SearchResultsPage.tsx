@@ -86,7 +86,7 @@ export default function SearchResultsPage() {
     <div className="page">
       {/* Sticky search header */}
       <header className="app-header">
-        <button className="back-btn" onClick={() => navigate('/')} aria-label="Back"><FiChevronLeft /></button>
+        <button className="back-btn" onClick={() => navigate('/home')} aria-label="Back"><FiChevronLeft /></button>
         <form onSubmit={handleSearch} className="search-bar" style={{ flex: 1 }}>
           <span className="search-icon"><FiSearch /></span>
           <input

@@ -78,7 +78,7 @@ export default function MedicineDetailPage() {
         <div className="empty-state">
           <div className="empty-state-icon"><FaPills /></div>
           <div className="empty-state-title">Medicine not found</div>
-          <button className="btn btn-primary btn-sm" onClick={() => navigate('/')}>Go Home</button>
+          <button className="btn btn-primary btn-sm" onClick={() => navigate('/home')}>Go Home</button>
         </div>
       </div>
     );

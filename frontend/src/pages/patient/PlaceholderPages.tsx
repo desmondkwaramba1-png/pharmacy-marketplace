@@ -10,7 +10,7 @@ export default function FavoritesPage() {
         <div className="empty-state-icon"><FiHeart /></div>
         <h2 className="empty-state-title">Your Favorites</h2>
         <p className="empty-state-text">You haven't saved any medicines to your favorites yet.</p>
-        <button className="btn btn-primary mt-16" onClick={() => navigate('/')}>Browse Medicines</button>
+        <button className="btn btn-primary mt-16" onClick={() => navigate('/home')}>Browse Medicines</button>
       </div>
     </div>
   );

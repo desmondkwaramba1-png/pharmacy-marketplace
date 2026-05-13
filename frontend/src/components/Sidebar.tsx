@@ -3,7 +3,7 @@ import { FiSearch, FiMap, FiClock, FiHeart, FiHelpCircle } from 'react-icons/fi'
 
 export default function Sidebar() {
   const menuItems = [
-    { to: '/', label: 'Search Medicines', icon: <FiSearch /> },
+    { to: '/home', label: 'Search Medicines', icon: <FiSearch /> },
     { to: '/map', label: 'Pharmacy Map', icon: <FiMap /> },
     { to: '/reservations', label: 'My Bookings', icon: <FiClock /> },
     { to: '/favorites', label: 'Favourites', icon: <FiHeart /> },

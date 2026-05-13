@@ -12,7 +12,8 @@ import DesktopNav from './components/DesktopNav';
 import Sidebar from './components/Sidebar';
 import AdminSidebar from './components/AdminSidebar';
 
-// Auth (unified sign-in / register page)
+// Public
+const LandingPage = lazy(() => import('./pages/LandingPage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
 
 // Patient pages
@@ -68,34 +69,48 @@ function AdminLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Redirect pharmacists to admin dashboard when they visit patient routes
-function PatientGuard({ children }: { children: React.ReactNode }) {
-  const { isPharmacist, isLoading } = useAuth();
+// Root: landing for guests, patient home for patients, redirect for pharmacists
+function RootRoute() {
+  const { isAuthenticated, isPharmacist, isLoading } = useAuth();
   if (isLoading) return <Loading />;
+  if (!isAuthenticated) return <LandingPage />;
+  if (isPharmacist) return <Navigate to="/admin/dashboard" replace />;
+  return (
+    <PatientLayout>
+      <Suspense fallback={<Loading />}>
+        <HomePage />
+      </Suspense>
+    </PatientLayout>
+  );
+}
+
+// Guard for patient sub-routes (not root)
+function PatientGuard({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isPharmacist, isLoading } = useAuth();
+  if (isLoading) return <Loading />;
+  if (!isAuthenticated) return <Navigate to="/" replace />;
   if (isPharmacist) return <Navigate to="/admin/dashboard" replace />;
   return <>{children}</>;
 }
 
-// Protect admin routes — redirect to /login if not authenticated or not a pharmacist
+// Protect admin routes
 function AdminGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isPharmacist, isLoading } = useAuth();
   if (isLoading) return <Loading />;
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to="/" replace />;
   if (!isPharmacist) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
-// After login lands here to decide where to go based on role
+// Post-login redirect based on role
 function LoginRedirect() {
   const { isAuthenticated, isPharmacist, isLoading } = useAuth();
   const navigate = useNavigate();
-
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate(isPharmacist ? '/admin/dashboard' : '/', { replace: true });
+      navigate(isPharmacist ? '/admin/dashboard' : '/home', { replace: true });
     }
   }, [isAuthenticated, isPharmacist, isLoading, navigate]);
-
   return <Loading />;
 }
 
@@ -105,14 +120,15 @@ export default function App() {
       <BrowserRouter>
         <Suspense fallback={<Loading />}>
           <Routes>
-            {/* Unified auth page — login, patient register, pharmacy register */}
+            {/* Root — smart: landing / patient home / admin redirect */}
+            <Route path="/" element={<RootRoute />} />
+
+            {/* Auth */}
             <Route path="/login" element={<AuthPage />} />
-            {/* Legacy pharmacy register URL → redirect to /login */}
-            <Route path="/pharmacy/register" element={<Navigate to="/login" replace />} />
-            {/* Post-login role-based redirect */}
+            <Route path="/pharmacy/register" element={<Navigate to="/login?tab=pharmacy" replace />} />
             <Route path="/auth/redirect" element={<LoginRedirect />} />
 
-            {/* Admin routes */}
+            {/* Admin */}
             <Route path="/admin/*" element={
               <AdminGuard>
                 <AdminLayout>
@@ -127,24 +143,49 @@ export default function App() {
               </AdminGuard>
             } />
 
-            {/* Patient routes */}
-            <Route path="/*" element={
+            {/* Patient app (requires login) */}
+            <Route path="/home" element={
               <PatientGuard>
-                <PatientLayout>
-                  <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/search" element={<SearchResultsPage />} />
-                    <Route path="/medicine/:id" element={<MedicineDetailPage />} />
-                    <Route path="/map" element={<MapViewPage />} />
-                    <Route path="/reservations" element={<MyReservationsPage />} />
-                    <Route path="/favorites" element={<FavoritesPage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
-                    <Route path="/help" element={<HelpPage />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Routes>
-                </PatientLayout>
+                <PatientLayout><Suspense fallback={<Loading />}><HomePage /></Suspense></PatientLayout>
               </PatientGuard>
             } />
+            <Route path="/search" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><SearchResultsPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+            <Route path="/medicine/:id" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><MedicineDetailPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+            <Route path="/map" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><MapViewPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+            <Route path="/reservations" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><MyReservationsPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+            <Route path="/favorites" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><FavoritesPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+            <Route path="/settings" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><SettingsPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+            <Route path="/help" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><HelpPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
         <Toaster position="top-center" />

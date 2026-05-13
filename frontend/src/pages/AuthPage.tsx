@@ -368,7 +368,7 @@ function AccountPage() {
     return (
       <div className="page">
         <header className="app-header">
-          <button className="back-btn" onClick={() => navigate('/')} aria-label="Back"><FiChevronLeft /></button>
+          <button className="back-btn" onClick={() => navigate('/home')} aria-label="Back"><FiChevronLeft /></button>
           <h1 className="app-header-title">My Account</h1>
         </header>
         <div className="page-content" style={{ paddingTop: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
@@ -389,7 +389,7 @@ function AccountPage() {
   return (
     <div className="page">
       <header className="app-header">
-        <button className="back-btn" onClick={() => navigate('/')} aria-label="Back"><FiChevronLeft /></button>
+        <button className="back-btn" onClick={() => navigate('/home')} aria-label="Back"><FiChevronLeft /></button>
         <h1 className="app-header-title">My Account</h1>
       </header>
       <div className="page-content" style={{ paddingTop: 24 }}>
@@ -509,7 +509,10 @@ export default function AuthPage() {
   const [searchParams] = useSearchParams();
   const { isAuthenticated } = useAuth();
 
-  const [tab, setTab] = useState<AuthTab>('login');
+  const [tab, setTab] = useState<AuthTab>(() => {
+    const t = new URLSearchParams(window.location.search).get('tab');
+    return (t === 'patient' || t === 'pharmacy') ? t : 'login';
+  });
   const [pharmacyName, setPharmacyName] = useState('');
   const [registered, setRegistered] = useState<'patient' | 'pharmacy' | null>(null);
 
@@ -545,7 +548,7 @@ export default function AuthPage() {
             <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', marginBottom: 24, lineHeight: 1.6 }}>
               Your account is ready. Start searching for medicines near you.
             </p>
-            <button className="btn btn-primary btn-full" onClick={() => navigate('/')} style={{ height: 46 }}>
+            <button className="btn btn-primary btn-full" onClick={() => navigate('/home')} style={{ height: 46 }}>
               Find Medicines
             </button>
           </div>

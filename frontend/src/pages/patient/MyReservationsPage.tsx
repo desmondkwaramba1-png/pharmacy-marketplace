@@ -42,7 +42,7 @@ export default function MyReservationsPage() {
             <div className="empty-state-icon">💊</div>
             <div className="empty-state-title">No orders yet</div>
             <p>Your medicine orders will appear here.</p>
-            <button className="btn btn-primary" onClick={() => navigate('/')} style={{ marginTop: 20 }}>
+            <button className="btn btn-primary" onClick={() => navigate('/home')} style={{ marginTop: 20 }}>
               Browse Medicines
             </button>
           </div>
