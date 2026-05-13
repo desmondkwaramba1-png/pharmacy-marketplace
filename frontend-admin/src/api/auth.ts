@@ -349,9 +349,23 @@ export const adminApi = {
     return mapOrder(data);
   },
 
-  collectOrder: async (bookingRef: string) => {
+  collectOrder: async (bookingRef: string, items?: { medicineId: string; quantity: number; pharmacyId: string }[]) => {
     const { error } = await supabase.rpc('collect_order', { p_booking_ref: bookingRef.toUpperCase() });
     if (error) throw error;
+
+    // Decrement inventory for each item (handles older DB deployments where
+    // collect_order doesn't yet include the inventory update logic)
+    if (items && items.length > 0) {
+      await Promise.all(
+        items.map(item =>
+          supabase.rpc('checkout_inventory', {
+            p_pharmacy_id: item.pharmacyId,
+            p_medicine_id: item.medicineId,
+            p_qty: item.quantity,
+          })
+        )
+      );
+    }
     return true;
   }
 };

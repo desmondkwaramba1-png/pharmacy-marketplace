@@ -783,6 +783,12 @@ img { max-width: 100%; display: block; }
 .admin-pharmacy-name { font-size: 14px; font-weight: 600; color: var(--color-text); }
 .admin-user-email { font-size: 12px; color: var(--color-text-secondary); }
 
+/* Desktop header extras (hidden on mobile) */
+.admin-header-title-desktop { display: none; }
+.admin-header-actions { display: none; }
+/* Mobile-only logout icon */
+.admin-header-logout-mobile { display: flex; }
+
 /* ============================================================
    ADMIN DASHBOARD
    ============================================================ */
@@ -1063,6 +1069,18 @@ img { max-width: 100%; display: block; }
 .gap-12 { gap: 12px; }
 
 /* ============================================================
+   PICKUP LAYOUT  (mobile-first, stacked)
+   ============================================================ */
+.pickup-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pickup-search-panel { flex: 0 0 auto; }
+.pickup-result-panel { flex: 1 1 auto; }
+
+/* ============================================================
    RESPONSIVE — TABLET (768px+)
    ============================================================ */
 @media (min-width: 768px) {
@@ -1092,119 +1110,145 @@ img { max-width: 100%; display: block; }
   :root {
     --screen-padding: 32px;
   }
-  .page-content { max-width: 1400px; padding: 40px; }
+  .page-content { max-width: 1200px; padding: 32px 40px; }
   .bottom-nav { display: none; }
   .page { padding-bottom: 0; }
 
   .desktop-sidebar {
     display: flex;
     flex-direction: column;
-    width: 280px;
+    width: 260px;
     height: 100vh;
     position: fixed;
     left: 0;
     top: 0;
     bottom: 0;
     backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.97);
     border-right: 1px solid var(--color-border);
-    padding: 24px 20px;
+    padding: 24px 16px;
     z-index: 1100;
     overflow-y: auto;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.04);
   }
 
   .desktop-main-wrapper {
-    margin-left: 280px;
+    margin-left: 260px;
   }
 
   .sidebar-logo {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 32px;
+    margin-bottom: 28px;
     padding: 0 10px;
   }
 
-  .logo-text { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+  .logo-text { font-size: 19px; font-weight: 700; letter-spacing: -0.5px; }
 
   .sidebar-user-info {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 16px;
+    padding: 14px;
     background: var(--color-bg);
-    border-radius: 16px;
-    margin-bottom: 32px;
+    border-radius: 14px;
+    margin-bottom: 28px;
   }
 
   .user-avatar {
     width: 40px;
     height: 40px;
-    background: var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     color: white;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
+    font-size: 16px;
   }
 
   .user-name { font-size: 14px; font-weight: 600; }
   .user-role { font-size: 11px; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
 
-  .sidebar-section { margin-bottom: 32px; }
+  .sidebar-section { margin-bottom: 28px; }
   .sidebar-section-title {
     display: block;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     color: var(--color-text-disabled);
-    letter-spacing: 1px;
-    margin-bottom: 16px;
+    letter-spacing: 1.2px;
+    margin-bottom: 10px;
     padding: 0 12px;
   }
 
-  .sidebar-nav { display: flex; flex-direction: column; gap: 4px; }
+  .sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
   .sidebar-link {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 16px;
-    border-radius: 12px;
+    padding: 11px 14px;
+    border-radius: 10px;
     color: var(--color-text-secondary);
     font-weight: 500;
-    font-size: 14.5px;
-    transition: all 0.2s;
+    font-size: 14px;
+    transition: all 0.15s;
   }
 
   .sidebar-link:hover { background: var(--color-bg); color: var(--color-primary); }
   .sidebar-link.active {
-    background: rgba(2, 128, 144, 0.08);
+    background: rgba(2, 128, 144, 0.09);
     color: var(--color-primary);
     font-weight: 600;
   }
 
-  .sidebar-icon { font-size: 18px; display: flex; }
-  .sidebar-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--color-border); }
+  .sidebar-icon { font-size: 17px; display: flex; }
+  .sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--color-border); display: flex; flex-direction: column; gap: 2px; }
 
   .admin-header {
     max-width: 100%;
     margin: 0;
-    height: 80px;
+    height: 64px;
     padding: 0 40px;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--color-border);
     position: sticky;
     top: 0;
     z-index: 1000;
     box-shadow: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
   }
 
-  .admin-header-left { display: none; } /* Logo and info in sidebar */
+  /* On desktop the logo/pharmacy info lives in the sidebar */
+  .admin-header-left { display: none; }
 
-  .admin-welcome { padding: 40px 40px 0; }
-  .stats-grid { padding: 24px 40px 0; gap: 24px; }
+  .admin-welcome { padding: 32px 0 0; }
+  .stats-grid { padding: 20px 0 0; gap: 20px; }
+
+  /* Desktop header: show page title and actions, hide mobile pieces */
+  .admin-header-title-desktop {
+    flex: 1;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--color-text);
+    display: block;
+  }
+  .admin-header-actions { display: flex; align-items: center; gap: 12px; }
+  .admin-header-logout-mobile { display: none; }
+
+  /* Pickup portal: search on left, results on right */
+  .pickup-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 32px;
+  }
+  .pickup-search-panel { flex: 0 0 360px; }
+  .pickup-result-panel { flex: 1 1 auto; min-width: 0; }
 }
 
 /* ============================================================

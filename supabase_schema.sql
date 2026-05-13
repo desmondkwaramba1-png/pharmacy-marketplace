@@ -179,11 +179,23 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Mark order as collected (in-person pickup)
+-- Mark order as collected (in-person pickup) and decrement inventory
 CREATE OR REPLACE FUNCTION collect_order(p_booking_ref TEXT)
 RETURNS VOID AS $$
 BEGIN
+  -- Update order status
   UPDATE orders SET status = 'collected' WHERE booking_ref = p_booking_ref;
+
+  -- Decrement quantity and release reserved stock for each item in the order
+  UPDATE pharmacy_inventory pi
+  SET
+    quantity          = GREATEST(0, pi.quantity - oi.quantity),
+    reserved_quantity = GREATEST(0, pi.reserved_quantity - oi.quantity)
+  FROM order_items oi
+  JOIN orders o ON o.id = oi.order_id
+  WHERE o.booking_ref = p_booking_ref
+    AND pi.pharmacy_id = o.pharmacy_id
+    AND pi.medicine_id = oi.medicine_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
