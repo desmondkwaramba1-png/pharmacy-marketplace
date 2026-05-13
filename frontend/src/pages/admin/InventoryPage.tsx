@@ -248,7 +248,7 @@ export default function InventoryPage() {
         )}
 
         <div className="results-list">
-          {data?.inventory.map((item) => {
+          {data?.inventory.map((item: InventoryItem) => {
             const edit = getEdit(item);
             const isSaving = savingId === item.medicineId;
             const isDirty =

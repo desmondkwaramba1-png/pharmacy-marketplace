@@ -14,7 +14,7 @@ export default function ProfilePage() {
   const [hours, setHours] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
 
-  const { data: pharmacy, isLoading } = useQuery({
+  const { data: pharmacy, isLoading } = useQuery<Pharmacy>({
     queryKey: ['admin-pharmacy'],
     queryFn: adminApi.getPharmacy,
   });
