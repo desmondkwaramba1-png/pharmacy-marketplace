@@ -153,28 +153,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stats strip */}
-      <div style={{
-        background: 'white', borderBottom: '1px solid #E8ECF0',
-        display: 'flex', justifyContent: 'center',
-      }}>
-        {[
-          { value: '100+', label: 'Pharmacies' },
-          { value: '2,000+', label: 'Medicines listed' },
-          { value: '10 min', label: 'Reservation hold' },
-          { value: 'Free', label: 'Always free to use' },
-        ].map((s, i) => (
-          <div key={i} style={{
-            flex: 1, maxWidth: 180, textAlign: 'center',
-            padding: '20px 12px',
-            borderRight: i < 3 ? '1px solid #E8ECF0' : 'none',
-          }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: '#0284a8', letterSpacing: '-0.03em' }}>{s.value}</div>
-            <div style={{ fontSize: 12, color: '#6B7280', marginTop: 2, fontWeight: 500 }}>{s.label}</div>
-          </div>
-        ))}
-      </div>
-
       {/* Features */}
       <section style={{ padding: '56px 24px', maxWidth: 720, margin: '0 auto', width: '100%' }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
