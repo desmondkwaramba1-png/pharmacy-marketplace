@@ -198,7 +198,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Uses SECURITY DEFINER to bypass RLS (pharmacists are not the order's user_id).
 -- Resolves pharmacy by owner_id OR by pharmacyId in JWT user_metadata,
 -- whichever is set — so both pharmacist setup methods work.
-CREATE OR REPLACE FUNCTION get_order_for_pickup(p_booking_ref TEXT, p_pharmacy_id UUID)
+CREATE OR REPLACE FUNCTION get_order_for_pickup(p_booking_ref TEXT)
 RETURNS JSONB AS $$
 DECLARE
   v_order JSONB;
@@ -212,6 +212,11 @@ BEGIN
     'status',       o.status,
     'created_at',   o.created_at,
     'expires_at',   o.expires_at,
+    'pharmacy',     jsonb_build_object(
+      'id',      p.id,
+      'name',    p.name,
+      'address', p.address
+    ),
     'items', (
       SELECT jsonb_agg(jsonb_build_object(
         'id',               oi.id,
@@ -220,12 +225,12 @@ BEGIN
         'quantity',         oi.quantity,
         'price_at_booking', oi.price_at_booking,
         'medicine', jsonb_build_object(
-          'id',             m.id,
-          'generic_name',   m.generic_name,
-          'brand_name',     m.brand_name,
-          'dosage',         m.dosage,
-          'form',           m.form,
-          'category',       m.category
+          'id',           m.id,
+          'generic_name', m.generic_name,
+          'brand_name',   m.brand_name,
+          'dosage',       m.dosage,
+          'form',         m.form,
+          'category',     m.category
         )
       ))
       FROM order_items oi
@@ -235,11 +240,11 @@ BEGIN
   )
   INTO v_order
   FROM orders o
-  WHERE o.booking_ref = upper(p_booking_ref)
-    AND o.pharmacy_id = p_pharmacy_id;
+  JOIN pharmacies p ON p.id = o.pharmacy_id
+  WHERE o.booking_ref = upper(p_booking_ref);
 
   IF v_order IS NULL THEN
-    RAISE EXCEPTION 'Booking not found for this pharmacy';
+    RAISE EXCEPTION 'Booking reference not found';
   END IF;
 
   RETURN v_order;

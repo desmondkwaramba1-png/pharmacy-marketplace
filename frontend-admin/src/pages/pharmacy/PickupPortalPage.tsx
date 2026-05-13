@@ -118,6 +118,11 @@ export default function PickupPortalPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
                   <div>
                     <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: 1 }}>{order.bookingRef}</div>
+                    {(order as any).pharmacy?.name && (
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-primary)', marginTop: 2 }}>
+                        {(order as any).pharmacy.name}
+                      </div>
+                    )}
                     <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Reserved on {new Date(order.createdAt).toLocaleString()}</div>
                   </div>
                   {getStatusBadge(order.status)}

@@ -331,18 +331,13 @@ export const adminApi = {
   },
 
   getOrder: async (bookingRef: string) => {
-    // Resolve pharmacy from user metadata (same source used everywhere else in admin)
-    const pharmacyId = await getMyPharmacyId();
-
     const { data, error } = await supabase.rpc('get_order_for_pickup', {
       p_booking_ref: bookingRef.toUpperCase(),
-      p_pharmacy_id: pharmacyId,
     });
 
     if (error) throw new Error(error.message || 'Booking not found for this pharmacy.');
     if (!data) throw new Error('Booking not found for this pharmacy.');
 
-    // The RPC returns a JSONB row — map it the same way as direct queries
     const raw = data as any;
     return {
       id: raw.id,
@@ -353,6 +348,7 @@ export const adminApi = {
       status: raw.status,
       createdAt: raw.created_at,
       expiresAt: raw.expires_at,
+      pharmacy: raw.pharmacy ?? null,
       items: (raw.items || []).map((item: any) => ({
         id: item.id,
         orderId: item.order_id,
