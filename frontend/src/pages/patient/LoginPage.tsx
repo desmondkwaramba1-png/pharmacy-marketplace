@@ -285,11 +285,11 @@ export default function LoginPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
               <div className="form-group">
                 <label className="form-label">First Name</label>
-                <input className="form-input" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="John" />
+                <input className="form-input" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" />
               </div>
               <div className="form-group">
                 <label className="form-label">Last Name</label>
-                <input className="form-input" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Doe" />
+                <input className="form-input" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" />
               </div>
             </div>
           )}

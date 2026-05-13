@@ -134,11 +134,11 @@ function PatientForm({ onSuccess }: { onSuccess: () => void }) {
       <div style={{ display: 'flex', gap: 12 }}>
         <div className="form-group" style={{ flex: 1 }}>
           <label className="form-label required">First Name</label>
-          <input className="form-input" value={form.firstName} onChange={set('firstName')} placeholder="John" />
+          <input className="form-input" value={form.firstName} onChange={set('firstName')} placeholder="First name" />
         </div>
         <div className="form-group" style={{ flex: 1 }}>
           <label className="form-label">Last Name</label>
-          <input className="form-input" value={form.lastName} onChange={set('lastName')} placeholder="Doe" />
+          <input className="form-input" value={form.lastName} onChange={set('lastName')} placeholder="Last name" />
         </div>
       </div>
       <div className="form-group">
@@ -244,11 +244,11 @@ function PharmacyForm({ onSuccess }: { onSuccess: (pharmacyName: string) => void
           <div style={{ display: 'flex', gap: 12 }}>
             <div className="form-group" style={{ flex: 1 }}>
               <label className="form-label required">First Name</label>
-              <input className="form-input" value={form.firstName} onChange={set('firstName')} placeholder="John" />
+              <input className="form-input" value={form.firstName} onChange={set('firstName')} placeholder="First name" />
             </div>
             <div className="form-group" style={{ flex: 1 }}>
               <label className="form-label">Last Name</label>
-              <input className="form-input" value={form.lastName} onChange={set('lastName')} placeholder="Doe" />
+              <input className="form-input" value={form.lastName} onChange={set('lastName')} placeholder="Last name" />
             </div>
           </div>
           <div className="form-group">
@@ -529,7 +529,7 @@ export default function AuthPage() {
   };
 
   const handlePatientSuccess = () => {
-    setRegistered('patient');
+    navigate('/auth/redirect', { replace: true });
   };
 
   const handlePharmacySuccess = (name: string) => {
@@ -581,7 +581,7 @@ export default function AuthPage() {
       <div className="login-card" style={{ maxWidth: tab === 'pharmacy' ? 480 : 420 }}>
         {/* Logo */}
         <div className="login-logo">
-          <span className="login-logo-icon"><FaPills color="var(--color-primary)" /></span>
+          <span className="login-logo-icon"><FaPills color="white" /></span>
           <div className="login-logo-title">MediFind</div>
           <div className="login-logo-sub">
             {tab === 'login' && 'Welcome back'}

@@ -1,131 +1,262 @@
 import { useNavigate } from 'react-router-dom';
 import { FaPills } from 'react-icons/fa';
-import { FiSearch, FiMapPin, FiShoppingCart, FiClock, FiArrowRight } from 'react-icons/fi';
+import { FiSearch, FiMapPin, FiShoppingCart, FiClock, FiArrowRight, FiChevronRight } from 'react-icons/fi';
+
+const features = [
+  {
+    icon: <FiSearch size={22} />,
+    color: '#0284a8',
+    bg: '#e0f4f8',
+    title: 'Search medicines',
+    desc: 'Find any medicine by name or category across all registered pharmacies instantly.',
+  },
+  {
+    icon: <FiMapPin size={22} />,
+    color: '#7C3AED',
+    bg: '#EDE9FE',
+    title: 'Nearby pharmacies',
+    desc: 'See which pharmacies have stock near you on an interactive map.',
+  },
+  {
+    icon: <FiShoppingCart size={22} />,
+    color: '#059669',
+    bg: '#D1FAE5',
+    title: 'Reserve & hold',
+    desc: 'Add to cart and hold your medicines for 10 minutes while you travel to collect.',
+  },
+  {
+    icon: <FiClock size={22} />,
+    color: '#D97706',
+    bg: '#FEF3C7',
+    title: 'Skip the wait',
+    desc: 'Your order is ready when you arrive — no searching, no disappointment.',
+  },
+];
 
 export default function LandingPage() {
   const navigate = useNavigate();
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--color-bg)',
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
-      {/* Header */}
-      <header style={{
+    <div style={{ minHeight: '100dvh', background: '#F4F6F8', display: 'flex', flexDirection: 'column' }}>
+
+      {/* Top nav */}
+      <nav style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '16px 24px', borderBottom: '1px solid var(--color-border)',
-        background: 'var(--color-card)',
+        padding: '0 24px', height: 64,
+        background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid #E8ECF0',
+        position: 'sticky', top: 0, zIndex: 50,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <FaPills size={24} color="var(--color-primary)" />
-          <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-text)' }}>MediFind</span>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10,
+            background: 'linear-gradient(135deg, #0284a8, #016680)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(2,132,168,0.25)',
+          }}>
+            <FaPills size={18} color="white" />
+          </div>
+          <span style={{ fontSize: 18, fontWeight: 800, color: '#111827', letterSpacing: '-0.03em' }}>
+            Medi<span style={{ color: '#0284a8' }}>Find</span>
+          </span>
         </div>
         <button
-          className="btn btn-secondary"
           onClick={() => navigate('/login')}
-          style={{ fontSize: 13, padding: '8px 18px' }}
+          style={{
+            background: 'none', border: '1.5px solid #E8ECF0', color: '#374151',
+            fontSize: 14, fontWeight: 600, padding: '8px 18px', borderRadius: 10,
+            cursor: 'pointer', transition: 'all 0.15s',
+          }}
+          onMouseEnter={e => { (e.target as HTMLElement).style.borderColor = '#0284a8'; (e.target as HTMLElement).style.color = '#0284a8'; }}
+          onMouseLeave={e => { (e.target as HTMLElement).style.borderColor = '#E8ECF0'; (e.target as HTMLElement).style.color = '#374151'; }}
         >
           Sign In
         </button>
-      </header>
+      </nav>
 
       {/* Hero */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 24px 32px' }}>
-        <div style={{ maxWidth: 560, width: '100%', textAlign: 'center' }}>
+      <section style={{
+        background: 'linear-gradient(150deg, #012d35 0%, #014d5e 50%, #01697a 100%)',
+        padding: '72px 24px 80px',
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Decorative blobs */}
+        <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(2,195,154,0.14) 0%, transparent 70%)', top: -180, right: -120, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', width: 350, height: 350, borderRadius: '50%', background: 'radial-gradient(circle, rgba(2,132,168,0.18) 0%, transparent 70%)', bottom: -120, left: -80, pointerEvents: 'none' }} />
+
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 640, margin: '0 auto' }}>
+          {/* Pill badge */}
           <div style={{
-            width: 72, height: 72, borderRadius: 20, background: 'var(--color-primary)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 24px', boxShadow: '0 8px 24px rgba(2,128,144,0.25)',
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: 600,
+            padding: '6px 14px', borderRadius: 999, marginBottom: 28,
+            letterSpacing: '0.04em', textTransform: 'uppercase',
           }}>
-            <FaPills size={32} color="white" />
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#02C39A', display: 'inline-block' }} />
+            Available across Zimbabwe
           </div>
 
-          <h1 style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.2, marginBottom: 16, color: 'var(--color-text)' }}>
+          <h1 style={{
+            fontSize: 'clamp(32px, 6vw, 52px)', fontWeight: 800, color: 'white',
+            lineHeight: 1.15, marginBottom: 20, letterSpacing: '-0.03em',
+          }}>
             Find your medicine,{' '}
-            <span style={{ color: 'var(--color-primary)' }}>nearby and in stock</span>
+            <span style={{ color: '#02C39A' }}>nearby and in stock</span>
           </h1>
 
-          <p style={{ fontSize: 16, color: 'var(--color-text-secondary)', lineHeight: 1.7, marginBottom: 40 }}>
-            MediFind connects patients with pharmacies across Zimbabwe.
-            Search for medicines, reserve your order in minutes, and collect at your pharmacy — no more wasted trips.
+          <p style={{
+            fontSize: 17, color: 'rgba(255,255,255,0.72)',
+            lineHeight: 1.7, marginBottom: 44, maxWidth: 480, margin: '0 auto 44px',
+          }}>
+            MediFind connects patients with pharmacies in real time. Search for
+            medicines, reserve your order, and collect — no more wasted trips.
           </p>
 
-          {/* CTAs */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 360, margin: '0 auto 48px' }}>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button
-                className="btn btn-primary"
-                onClick={() => navigate('/login?tab=patient')}
-                style={{ flex: 1, height: 52, fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-              >
-                I'm a Patient <FiArrowRight />
-              </button>
-              <button
-                className="btn btn-secondary"
-                onClick={() => navigate('/login?tab=pharmacy')}
-                style={{ flex: 1, height: 52, fontSize: 15, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-              >
-                I'm a Pharmacy <FiArrowRight />
-              </button>
-            </div>
+          {/* CTA buttons */}
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
+              onClick={() => navigate('/login?tab=patient')}
               style={{
-                background: 'none', border: 'none', color: 'var(--color-text-secondary)',
-                fontSize: 13, cursor: 'pointer', textDecoration: 'underline',
+                display: 'flex', alignItems: 'center', gap: 8,
+                background: 'white', color: '#0284a8',
+                fontSize: 15, fontWeight: 700,
+                padding: '14px 28px', borderRadius: 14, border: 'none',
+                cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                transition: 'all 0.18s',
               }}
-              onClick={() => navigate('/login')}
+              onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-2px)')}
+              onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
             >
-              Already have an account? Sign in
+              I'm a Patient <FiArrowRight />
             </button>
-          </div>
-
-          {/* Feature cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, textAlign: 'left' }}>
-            {[
-              { icon: <FiSearch size={20} />, title: 'Search medicines', desc: 'Find any medicine by name, dosage, or category across all pharmacies.' },
-              { icon: <FiMapPin size={20} />, title: 'See what\'s near you', desc: 'Map view shows pharmacies with stock closest to your location.' },
-              { icon: <FiShoppingCart size={20} />, title: 'Reserve your order', desc: 'Add to cart and hold your medicines while you travel to collect.' },
-              { icon: <FiClock size={20} />, title: 'Skip the wait', desc: 'Your order is ready when you arrive — no searching, no disappointment.' },
-            ].map(f => (
-              <div key={f.title} style={{
-                background: 'var(--color-card)', border: '1px solid var(--color-border)',
-                borderRadius: 14, padding: '16px 14px',
-              }}>
-                <div style={{ color: 'var(--color-primary)', marginBottom: 8 }}>{f.icon}</div>
-                <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4, color: 'var(--color-text)' }}>{f.title}</div>
-                <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>{f.desc}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Pharmacy CTA strip */}
-          <div style={{
-            marginTop: 32, background: 'linear-gradient(135deg, var(--color-primary), #024950)',
-            borderRadius: 16, padding: '24px 20px', color: 'white', textAlign: 'center',
-          }}>
-            <div style={{ fontSize: 13, opacity: 0.85, marginBottom: 4 }}>Are you a pharmacy owner?</div>
-            <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 16 }}>
-              Join MediFind and reach thousands of patients
-            </div>
             <button
-              className="btn"
               onClick={() => navigate('/login?tab=pharmacy')}
               style={{
-                background: 'rgba(255,255,255,0.15)', color: 'white',
-                border: '1px solid rgba(255,255,255,0.3)', fontSize: 13,
-                fontWeight: 600, padding: '10px 24px',
+                display: 'flex', alignItems: 'center', gap: 8,
+                background: 'rgba(255,255,255,0.12)', color: 'white',
+                border: '1.5px solid rgba(255,255,255,0.3)',
+                fontSize: 15, fontWeight: 600,
+                padding: '14px 28px', borderRadius: 14,
+                cursor: 'pointer', backdropFilter: 'blur(8px)',
+                transition: 'all 0.18s',
               }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.2)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
             >
-              Register your pharmacy →
+              Register Pharmacy <FiArrowRight />
             </button>
           </div>
         </div>
-      </main>
+      </section>
 
-      <footer style={{ textAlign: 'center', padding: '16px 24px', fontSize: 12, color: 'var(--color-text-secondary)', borderTop: '1px solid var(--color-border)' }}>
-        © {new Date().getFullYear()} MediFind Zimbabwe
+      {/* Stats strip */}
+      <div style={{
+        background: 'white', borderBottom: '1px solid #E8ECF0',
+        display: 'flex', justifyContent: 'center',
+      }}>
+        {[
+          { value: '100+', label: 'Pharmacies' },
+          { value: '2,000+', label: 'Medicines listed' },
+          { value: '10 min', label: 'Reservation hold' },
+          { value: 'Free', label: 'Always free to use' },
+        ].map((s, i) => (
+          <div key={i} style={{
+            flex: 1, maxWidth: 180, textAlign: 'center',
+            padding: '20px 12px',
+            borderRight: i < 3 ? '1px solid #E8ECF0' : 'none',
+          }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: '#0284a8', letterSpacing: '-0.03em' }}>{s.value}</div>
+            <div style={{ fontSize: 12, color: '#6B7280', marginTop: 2, fontWeight: 500 }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Features */}
+      <section style={{ padding: '56px 24px', maxWidth: 720, margin: '0 auto', width: '100%' }}>
+        <div style={{ textAlign: 'center', marginBottom: 40 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, color: '#0284a8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>How it works</p>
+          <h2 style={{ fontSize: 28, fontWeight: 800, color: '#111827', letterSpacing: '-0.03em' }}>Everything you need, in one app</h2>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+          {features.map(f => (
+            <div key={f.title} style={{
+              background: 'white', border: '1.5px solid #E8ECF0',
+              borderRadius: 18, padding: '22px 20px',
+              transition: 'box-shadow 0.2s, transform 0.2s',
+              cursor: 'default',
+            }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
+            >
+              <div style={{
+                width: 44, height: 44, borderRadius: 12,
+                background: f.bg, color: f.color,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: 14,
+              }}>
+                {f.icon}
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 6 }}>{f.title}</div>
+              <div style={{ fontSize: 13, color: '#6B7280', lineHeight: 1.6 }}>{f.desc}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Pharmacy CTA */}
+      <section style={{ padding: '0 24px 56px', maxWidth: 720, margin: '0 auto', width: '100%' }}>
+        <div style={{
+          background: 'linear-gradient(135deg, #012d35 0%, #01697a 100%)',
+          borderRadius: 24, padding: '36px 32px',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          textAlign: 'center', gap: 16,
+          position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{ position: 'absolute', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(2,195,154,0.15) 0%, transparent 70%)', top: -100, right: -60, pointerEvents: 'none' }} />
+          <div style={{
+            width: 52, height: 52, borderRadius: 16,
+            background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <FaPills size={22} color="white" />
+          </div>
+          <div>
+            <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, marginBottom: 6 }}>Pharmacy owners</p>
+            <h3 style={{ color: 'white', fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 8 }}>
+              Reach more patients today
+            </h3>
+            <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 14, maxWidth: 380 }}>
+              List your inventory, manage stock in real time, and let patients find and reserve from your pharmacy.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/login?tab=pharmacy')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              background: '#02C39A', color: 'white', border: 'none',
+              fontSize: 14, fontWeight: 700, padding: '12px 24px', borderRadius: 12,
+              cursor: 'pointer', transition: 'all 0.18s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#01a882')}
+            onMouseLeave={e => (e.currentTarget.style.background = '#02C39A')}
+          >
+            Register your pharmacy <FiChevronRight />
+          </button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer style={{
+        marginTop: 'auto', textAlign: 'center', padding: '20px 24px',
+        fontSize: 12, color: '#9CA3AF',
+        borderTop: '1px solid #E8ECF0', background: 'white',
+      }}>
+        © {new Date().getFullYear()} MediFind Zimbabwe · Built to make healthcare accessible
       </footer>
     </div>
   );
