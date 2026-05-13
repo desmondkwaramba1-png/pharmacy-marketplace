@@ -1,40 +1,55 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiHome, FiBox, FiLogOut } from 'react-icons/fi';
+import { FiHome, FiBox, FiLogOut, FiShoppingBag } from 'react-icons/fi';
 import { FaClinicMedical, FaPills } from 'react-icons/fa';
 
 const tabs = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: <FiHome size={22} /> },
+  { to: '/admin/pickups',   label: 'Pickups',   icon: <FiShoppingBag size={22} /> },
   { to: '/admin/inventory', label: 'Inventory', icon: <FiBox size={22} /> },
-  { to: '/admin/profile', label: 'Pharmacy', icon: <FaClinicMedical size={22} /> },
+  { to: '/admin/profile',   label: 'Pharmacy',  icon: <FaClinicMedical size={22} /> },
 ];
 
 export default function AdminNav() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/admin/login');
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   };
 
   return (
     <>
-      {/* Top bar */}
-      <header className="admin-header">
+      {/* Mobile top header — hidden on desktop */}
+      <header className="admin-header admin-header-mobile">
         <div className="admin-header-left">
-          <span className="admin-logo"><FaPills color="var(--color-primary)" /></span>
+          <div style={{
+            width: 32, height: 32, borderRadius: 9,
+            background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <FaPills size={16} color="white" />
+          </div>
           <div>
             <div className="admin-pharmacy-name">{user?.pharmacy?.name ?? 'MediFind Admin'}</div>
             <div className="admin-user-email">{user?.email}</div>
           </div>
         </div>
-        <button onClick={handleLogout} className="btn-icon" title="Logout" aria-label="Logout">
-          <FiLogOut size={20} color="var(--color-text)" />
+        <button
+          onClick={handleLogout}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'var(--color-error-bg)', color: 'var(--color-error)',
+            border: 'none', borderRadius: 10, padding: '8px 14px',
+            fontSize: 13, fontWeight: 600, cursor: 'pointer',
+          }}
+        >
+          <FiLogOut size={16} /> Logout
         </button>
       </header>
 
-      {/* Bottom tabs */}
+      {/* Mobile bottom nav — hidden on desktop */}
       <nav className="bottom-nav admin-bottom-nav" aria-label="Admin navigation">
         {tabs.map((tab) => (
           <NavLink

@@ -6,7 +6,7 @@ export default function BottomNav() {
   const { isAuthenticated, user } = useAuth();
 
   const tabs = [
-    { to: '/', label: 'Search', icon: FiSearch, exact: true },
+    { to: '/home', label: 'Search', icon: FiSearch, exact: true },
     { to: '/map', label: 'Map', icon: FiMap },
     { to: '/reservations', label: 'Bookings', icon: FiClock },
     { to: '/login', label: isAuthenticated ? (user?.firstName || 'Account') : 'Sign In', icon: FiUser },
