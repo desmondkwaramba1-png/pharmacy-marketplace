@@ -331,10 +331,12 @@ export const adminApi = {
   },
 
   getOrder: async (bookingRef: string) => {
-    // Use the SECURITY DEFINER RPC so RLS on orders/order_items doesn't
-    // block pharmacists (who are not the order's user_id).
+    // Resolve pharmacy from user metadata (same source used everywhere else in admin)
+    const pharmacyId = await getMyPharmacyId();
+
     const { data, error } = await supabase.rpc('get_order_for_pickup', {
       p_booking_ref: bookingRef.toUpperCase(),
+      p_pharmacy_id: pharmacyId,
     });
 
     if (error) throw new Error(error.message || 'Booking not found for this pharmacy.');

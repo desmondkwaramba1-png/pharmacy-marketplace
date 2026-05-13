@@ -198,24 +198,11 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Uses SECURITY DEFINER to bypass RLS (pharmacists are not the order's user_id).
 -- Resolves pharmacy by owner_id OR by pharmacyId in JWT user_metadata,
 -- whichever is set — so both pharmacist setup methods work.
-CREATE OR REPLACE FUNCTION get_order_for_pickup(p_booking_ref TEXT)
+CREATE OR REPLACE FUNCTION get_order_for_pickup(p_booking_ref TEXT, p_pharmacy_id UUID)
 RETURNS JSONB AS $$
 DECLARE
-  v_pharmacy_id UUID;
   v_order JSONB;
 BEGIN
-  -- Method 1: pharmacy linked via owner_id column
-  SELECT id INTO v_pharmacy_id FROM pharmacies WHERE owner_id = auth.uid() LIMIT 1;
-
-  -- Method 2: pharmacy ID stored in the pharmacist's JWT user_metadata
-  IF v_pharmacy_id IS NULL THEN
-    v_pharmacy_id := (auth.jwt() -> 'user_metadata' ->> 'pharmacyId')::UUID;
-  END IF;
-
-  IF v_pharmacy_id IS NULL THEN
-    RAISE EXCEPTION 'No pharmacy linked to your account';
-  END IF;
-
   SELECT jsonb_build_object(
     'id',           o.id,
     'booking_ref',  o.booking_ref,
@@ -249,7 +236,7 @@ BEGIN
   INTO v_order
   FROM orders o
   WHERE o.booking_ref = upper(p_booking_ref)
-    AND o.pharmacy_id = v_pharmacy_id;
+    AND o.pharmacy_id = p_pharmacy_id;
 
   IF v_order IS NULL THEN
     RAISE EXCEPTION 'Booking not found for this pharmacy';
