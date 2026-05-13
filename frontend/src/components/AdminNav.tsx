@@ -15,7 +15,7 @@ export default function AdminNav() {
 
   const handleLogout = () => {
     logout();
-    navigate('/admin/login');
+    navigate('/login');
   };
 
   return (
