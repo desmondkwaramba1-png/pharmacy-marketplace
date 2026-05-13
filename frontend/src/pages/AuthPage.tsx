@@ -345,7 +345,7 @@ function PharmacyForm({ onSuccess }: { onSuccess: (pharmacyName: string) => void
 }
 
 // ── Account page (shown when already logged in) ───────────────────────────────
-function AccountPage() {
+export function AccountPage() {
   const navigate = useNavigate();
   const { user, logout, isPharmacist } = useAuth();
   const { cart, setCartOpen } = useCart();
@@ -519,8 +519,11 @@ export default function AuthPage() {
   const returnTo = searchParams.get('returnTo') || '/';
   const message = searchParams.get('message');
 
-  // Already logged in → show account page
-  if (isAuthenticated) return <AccountPage />;
+  // Already logged in → redirect to the right place immediately
+  if (isAuthenticated) {
+    navigate('/auth/redirect', { replace: true });
+    return null;
+  }
 
   const handleLoginSuccess = () => {
     // Auth state updates async via onAuthStateChange; navigate to redirect helper

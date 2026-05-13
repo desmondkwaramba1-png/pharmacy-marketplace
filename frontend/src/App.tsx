@@ -15,6 +15,7 @@ import AdminSidebar from './components/AdminSidebar';
 // Public
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
+const AccountPage = lazy(() => import('./pages/AuthPage').then(m => ({ default: m.AccountPage })));
 
 // Patient pages
 const HomePage = lazy(() => import('./pages/patient/HomePage'));
@@ -190,6 +191,11 @@ export default function App() {
             <Route path="/help" element={
               <PatientGuard>
                 <PatientLayout><Suspense fallback={<Loading />}><HelpPage /></Suspense></PatientLayout>
+              </PatientGuard>
+            } />
+            <Route path="/account" element={
+              <PatientGuard>
+                <PatientLayout><Suspense fallback={<Loading />}><AccountPage /></Suspense></PatientLayout>
               </PatientGuard>
             } />
 

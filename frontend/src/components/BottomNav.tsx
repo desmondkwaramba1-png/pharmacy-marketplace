@@ -9,7 +9,7 @@ export default function BottomNav() {
     { to: '/home', label: 'Search', icon: <FiSearch size={22} />, exact: true },
     { to: '/map', label: 'Map', icon: <FiMap size={22} /> },
     { to: '/reservations', label: 'Bookings', icon: <FiClock size={22} /> },
-    { to: '/login', label: isAuthenticated ? (user?.firstName || 'Account') : 'Sign In', icon: <FiUser size={22} /> },
+    { to: isAuthenticated ? '/account' : '/login', label: isAuthenticated ? (user?.firstName || 'Account') : 'Sign In', icon: <FiUser size={22} /> },
   ];
 
   return (
