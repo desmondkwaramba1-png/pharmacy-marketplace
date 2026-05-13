@@ -21,6 +21,11 @@ export interface Medicine {
   description?: string;
   standardPrice?: number;
   imageUrl?: string;
+  // MCAZ compliance
+  distributionCategory?: 'OTC' | 'PIM' | 'PP';
+  requiresPrescription?: boolean;
+  advertisingClass?: 'freely_advertised' | 'restricted' | 'no_public_ad';
+  isBanned?: boolean;
 }
 
 export interface Pharmacy {

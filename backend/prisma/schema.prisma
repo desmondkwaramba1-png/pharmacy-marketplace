@@ -39,6 +39,14 @@ model Pharmacy {
   isActive       Boolean @default(true)
   ownerId        String? @unique
 
+  // MCAZ compliance fields
+  mcazLicenseNumber   String?   // Must match mcaz_premises.license_number
+  mcazVerified        Boolean   @default(false)
+  mcazVerifiedAt      DateTime?
+  mcazSuspended       Boolean   @default(false)
+  mcazSuspendReason   String?
+  marketplaceStatus   String    @default("pending") // pending | active | suspended
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -58,6 +66,14 @@ model Medicine {
   description   String?
   standardPrice Float?
   imageUrl      String?
+
+  // MCAZ compliance fields
+  mcazRegNumber        String?  // Links to mcaz_medicines.registration_number
+  distributionCategory String   @default("OTC") // OTC | PIM | PP
+  requiresPrescription Boolean  @default(false)
+  advertisingClass     String   @default("freely_advertised") // freely_advertised | restricted | no_public_ad
+  isMcazVerified       Boolean  @default(false)
+  isBanned             Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -147,4 +163,71 @@ model CartItem {
   pharmacy Pharmacy @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
 
   @@unique([cartId, pharmacyId, medicineId])
+}
+
+// ── MCAZ COMPLIANCE CACHE TABLES ─────────────────────────────────────────────
+
+model McazPremise {
+  id                  Int      @id @default(autoincrement())
+  licenseNumber       String   @unique
+  premiseName         String
+  physicalAddress     String
+  city                String?
+  pharmacistInCharge  String?
+  licenseStatus       String   @default("Active") // Active | Suspended | Expired
+  expiryDate          String?  // stored as string from scrape
+  lastScrapedAt       DateTime @default(now())
+
+  @@map("mcaz_premises")
+}
+
+model McazMedicine {
+  id                   Int      @id @default(autoincrement())
+  registrationNumber   String   @unique
+  productName          String
+  genericName          String
+  strengthForm         String
+  distributionCategory String   // PP | PIM | OTC
+  applicantHolder      String?
+  lastScrapedAt        DateTime @default(now())
+
+  @@map("mcaz_medicines")
+}
+
+model McazPerson {
+  id                 Int      @id @default(autoincrement())
+  registrationNumber String   @unique
+  fullName           String
+  qualification      String?
+  status             String   @default("Active")
+  lastScrapedAt      DateTime @default(now())
+
+  @@map("mcaz_persons")
+}
+
+model ScraperLog {
+  id          Int      @id @default(autoincrement())
+  target      String   // premises | medicines | persons
+  status      String   // success | failed | partial
+  rowsFound   Int      @default(0)
+  errorMsg    String?
+  ranAt       DateTime @default(now())
+
+  @@map("scraper_logs")
+}
+
+// ── PRESCRIPTION RECORDS (5-year retention) ──────────────────────────────────
+
+model PrescriptionRecord {
+  id                    String   @id @default(cuid())
+  orderId               String
+  patientId             String?
+  prescriptionImageUrl  String   // encrypted bucket URL
+  pharmacistRegNo       String?  // verified against mcaz_persons
+  pharmacistVerified    Boolean  @default(false)
+  verifiedAt            DateTime?
+  retainUntil           DateTime // 5 years from upload
+  createdAt             DateTime @default(now())
+
+  @@map("prescription_records")
 }

@@ -17,6 +17,8 @@ import adminRoutes from './routes/admin';
 import cartRoutes from './routes/cart';
 import { errorHandler, notFound } from './middleware/errorHandler';
 import { cleanupExpiredReservations } from './controllers/cartController';
+import complianceRoutes from './routes/compliance';
+import { runMcazScraper } from './services/mcaz/scraper';
 
 const app = express();
 const httpServer = createServer(app);
@@ -66,6 +68,7 @@ app.use('/api/medicines', medicineRoutes);
 app.use('/api/pharmacies', pharmacyRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/compliance', complianceRoutes);
 
 // 404 & Error handling
 app.use('/uploads', express.static('public/uploads'));
@@ -88,6 +91,15 @@ httpServer.listen(PORT, () => {
       console.error('Reservation cleanup error:', err);
     }
   }, 60_000);
+
+  // MCAZ scraper cron — runs once every 24 hours
+  const MCAZ_INTERVAL_MS = 24 * 60 * 60 * 1000;
+  setTimeout(function scheduleMcaz() {
+    runMcazScraper()
+      .catch(err => console.error('[MCAZ cron] Scraper run failed:', err))
+      .finally(() => setTimeout(scheduleMcaz, MCAZ_INTERVAL_MS));
+  }, MCAZ_INTERVAL_MS);
+  console.log('   MCAZ scraper scheduled (first run in 24 h)');
 });
 
 export default app;
