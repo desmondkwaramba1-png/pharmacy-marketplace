@@ -10,6 +10,7 @@ import { CartProvider } from './context/CartContext';
 import { Toaster } from 'react-hot-toast';
 
 // Lazy load all pages for code splitting
+const LandingPage = lazy(() => import('./pages/LandingPage'));
 const HomePage = lazy(() => import('./pages/patient/HomePage'));
 const SearchResultsPage = lazy(() => import('./pages/patient/SearchResultsPage'));
 const MedicineDetailPage = lazy(() => import('./pages/patient/MedicineDetailPage'));
@@ -50,25 +51,30 @@ export default function App() {
   return (
     <CartProvider>
       <BrowserRouter>
-        <PatientLayout>
-          <Suspense fallback={<Loading />}>
-            <Routes>
-              {/* Patient routes */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/search" element={<SearchResultsPage />} />
-              <Route path="/medicine/:id" element={<MedicineDetailPage />} />
-              <Route path="/map" element={<MapViewPage />} />
-              <Route path="/reservations" element={<MyReservationsPage />} />
-              <Route path="/favorites" element={<FavoritesPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/help" element={<HelpPage />} />
+        <Suspense fallback={<Loading />}>
+          <Routes>
+            {/* Landing page — no app shell */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
 
-              <Route path="/login" element={<LoginPage />} />
-
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
-        </PatientLayout>
+            {/* Patient app routes — wrapped in app shell */}
+            <Route path="/*" element={
+              <PatientLayout>
+                <Routes>
+                  <Route path="home" element={<HomePage />} />
+                  <Route path="search" element={<SearchResultsPage />} />
+                  <Route path="medicine/:id" element={<MedicineDetailPage />} />
+                  <Route path="map" element={<MapViewPage />} />
+                  <Route path="reservations" element={<MyReservationsPage />} />
+                  <Route path="favorites" element={<FavoritesPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                  <Route path="help" element={<HelpPage />} />
+                  <Route path="*" element={<Navigate to="/home" replace />} />
+                </Routes>
+              </PatientLayout>
+            } />
+          </Routes>
+        </Suspense>
         <Toaster position="top-center" />
       </BrowserRouter>
     </CartProvider>

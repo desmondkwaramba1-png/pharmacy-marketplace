@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '../../api/auth';
 import type { Pharmacy } from '../../types';
-import { FiSave, FiClock, FiMapPin } from 'react-icons/fi';
+import { FiSave, FiClock, FiMapPin, FiShield } from 'react-icons/fi';
 import { FaClinicMedical, FaCheckCircle } from 'react-icons/fa';
 
 const DAYS = ['mon','tue','wed','thu','fri','sat','sun'];
@@ -30,6 +30,7 @@ export default function ProfilePage() {
         email: pharmacy.email ?? '',
         latitude: pharmacy.latitude,
         longitude: pharmacy.longitude,
+        mcazLicenseNumber: (pharmacy as any).mcazLicenseNumber ?? '',
       });
       if (pharmacy.operatingHours) {
         setHours(pharmacy.operatingHours as Record<string, string>);
@@ -130,6 +131,34 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* MCAZ Licence */}
+        <div className="info-section" style={{ marginTop: 12 }}>
+          <div className="info-section-title" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><FiShield /> MCAZ Licence</div>
+          <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 10 }}>
+            Enter your MCAZ premises licence number so your pharmacy can be verified against the official register.
+          </p>
+          <div className="form-group">
+            <label className="form-label">Licence Number</label>
+            <input
+              className="form-input"
+              value={(form as any).mcazLicenseNumber ?? ''}
+              onChange={(e) => set('mcazLicenseNumber', e.target.value.toUpperCase())}
+              placeholder="e.g. PH-1234"
+              style={{ textTransform: 'uppercase', letterSpacing: 1 }}
+            />
+          </div>
+          {(pharmacy as any)?.mcazVerified && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#15803D', marginTop: 6 }}>
+              <FaCheckCircle /> Verified against MCAZ register
+            </div>
+          )}
+          {(pharmacy as any)?.mcazSuspendReason && (
+            <div style={{ fontSize: 12, color: '#B45309', marginTop: 6 }}>
+              Note: {(pharmacy as any).mcazSuspendReason}
+            </div>
+          )}
         </div>
 
         {/* Location */}

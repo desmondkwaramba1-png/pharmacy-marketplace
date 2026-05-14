@@ -39,6 +39,14 @@ model Pharmacy {
   isActive       Boolean @default(true)
   ownerId        String? @unique
 
+  // MCAZ compliance fields
+  mcazLicenseNumber String?
+  mcazVerified      Boolean   @default(false)
+  mcazVerifiedAt    DateTime?
+  mcazSuspended     Boolean   @default(false)
+  mcazSuspendReason String?
+  marketplaceStatus String    @default("active") // active | suspended | pending
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -48,16 +56,63 @@ model Pharmacy {
   orders    Order[]
 }
 
+model McazPremise {
+  id                 String    @id @default(cuid())
+  licenseNumber      String    @unique
+  premiseName        String
+  physicalAddress    String
+  city               String?
+  pharmacistInCharge String?
+  licenseStatus      String    @default("Active")
+  expiryDate         String?
+  lastScrapedAt      DateTime  @default(now())
+}
+
+model McazMedicine {
+  id                   String   @id @default(cuid())
+  registrationNumber   String   @unique
+  productName          String
+  genericName          String?
+  strengthForm         String?
+  distributionCategory String   @default("OTC")
+  applicantHolder      String?
+  lastScrapedAt        DateTime @default(now())
+}
+
+model McazPerson {
+  id                 String   @id @default(cuid())
+  registrationNumber String   @unique
+  fullName           String
+  qualification      String?
+  status             String   @default("Active")
+  lastScrapedAt      DateTime @default(now())
+}
+
+model ScraperLog {
+  id        String   @id @default(cuid())
+  target    String   // premises | medicines | persons
+  status    String   // success | failed
+  rowsFound Int      @default(0)
+  errorMsg  String?
+  ranAt     DateTime @default(now())
+}
+
 model Medicine {
-  id            String  @id @default(cuid())
-  genericName   String
-  brandName     String?
-  dosage        String?
-  form          String?
-  category      String?
-  description   String?
-  standardPrice Float?
-  imageUrl      String?
+  id                   String  @id @default(cuid())
+  genericName          String
+  brandName            String?
+  dosage               String?
+  form                 String?
+  category             String?
+  description          String?
+  standardPrice        Float?
+  imageUrl             String?
+  mcazRegNumber        String?
+  distributionCategory String?
+  requiresPrescription Boolean @default(false)
+  advertisingClass     String?
+  isMcazVerified       Boolean @default(false)
+  isBanned             Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -101,6 +156,7 @@ model Order {
   createdAt      DateTime @default(now())
   expiresAt      DateTime
   items          OrderItem[]
+  pharmacy       Pharmacy  @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
 }
 
 model OrderItem {

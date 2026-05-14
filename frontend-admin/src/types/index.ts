@@ -37,6 +37,11 @@ export interface Pharmacy {
   operatingHours?: Record<string, string> | null;
   isActive: boolean;
   logoUrl?: string;
+  mcazLicenseNumber?: string;
+  mcazVerified?: boolean;
+  mcazSuspended?: boolean;
+  mcazSuspendReason?: string | null;
+  mcazVerifiedAt?: string | null;
 }
 
 export interface SearchResult {

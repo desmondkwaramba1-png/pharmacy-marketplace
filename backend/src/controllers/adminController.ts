@@ -188,7 +188,7 @@ export async function updatePharmacyProfile(req: AuthRequest, res: Response): Pr
     const { pharmacyId } = req.user!;
     if (!pharmacyId) { res.status(400).json({ error: 'No pharmacy linked' }); return; }
 
-    const { name, address, suburb, city, phone, email, latitude, longitude, operatingHours } = req.body;
+    const { name, address, suburb, city, phone, email, latitude, longitude, operatingHours, mcazLicenseNumber } = req.body;
 
     const updated = await prisma.pharmacy.update({
       where: { id: pharmacyId },
@@ -202,6 +202,7 @@ export async function updatePharmacyProfile(req: AuthRequest, res: Response): Pr
         ...(latitude && { latitude: parseFloat(latitude) }),
         ...(longitude && { longitude: parseFloat(longitude) }),
         ...(operatingHours && { operatingHours: JSON.stringify(operatingHours) }),
+        ...(mcazLicenseNumber !== undefined && { mcazLicenseNumber: mcazLicenseNumber || null }),
       },
     });
 
