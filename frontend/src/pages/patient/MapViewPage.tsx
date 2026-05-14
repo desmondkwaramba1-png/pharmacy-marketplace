@@ -73,15 +73,24 @@ export default function MapViewPage() {
 
   return (
     <div className="page">
-      <header className="app-header">
-        <button className="back-btn" onClick={() => navigate(-1)} aria-label="Back"><FiChevronLeft /></button>
-        <h1 className="app-header-title">{showMap && destLat ? 'Navigation' : 'Pharmacy Map'}</h1>
-        <button
-          className="btn-icon"
-          onClick={() => setShowMap(!showMap)}
-          title={showMap ? 'List view' : 'Map view'}
-        >
-          {showMap ? <FiList /> : <FiMap />}
+      <header style={{
+        background: 'linear-gradient(135deg, #b8eaf3 0%, #d4f5ec 50%, #e8f8f5 100%)',
+        padding: '12px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        boxShadow: '0 1px 8px rgba(0,0,0,0.06)',
+        borderBottom: '1px solid rgba(2,132,168,0.12)',
+      }}>
+        <button onClick={() => navigate(-1)} aria-label="Back" style={{ background: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#0284a8', flexShrink: 0 }}>
+          <FiChevronLeft size={20} />
+        </button>
+        <h1 style={{ flex: 1, color: '#0f172a', fontSize: 17, fontWeight: 800, margin: 0, letterSpacing: '-0.03em' }}>{showMap && destLat ? 'Navigation' : 'Pharmacy Map'}</h1>
+        <button onClick={() => setShowMap(!showMap)} title={showMap ? 'List view' : 'Map view'} style={{ background: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#0284a8', flexShrink: 0 }}>
+          {showMap ? <FiList size={18} /> : <FiMap size={18} />}
         </button>
       </header>
 
@@ -110,31 +119,35 @@ export default function MapViewPage() {
             {pharmacies.map((pharmacy) => (
               <div
                 key={pharmacy.id}
-                className="medicine-card"
                 onClick={() => setSelectedPharmacy(pharmacy)}
                 role="button"
                 tabIndex={0}
+                style={{ background: '#fff', border: '1.5px solid #e2e8f0', borderLeft: '3px solid #0284a8', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: 16, marginBottom: 12, cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px rgba(2,132,168,0.15)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}
               >
-                <div className="medicine-card-header">
-                  <div className="medicine-icon"><FaClinicMedical color="var(--color-primary)" /></div>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 10 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg, #e0f2fe, #ccfbf1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <FaClinicMedical color="#0284a8" size={18} />
+                  </div>
                   <div style={{ flex: 1 }}>
-                    <div className="medicine-name">{pharmacy.name}</div>
-                    <div className="medicine-meta">{pharmacy.address}</div>
-                    {pharmacy.suburb && <div className="medicine-meta">{pharmacy.suburb}, {pharmacy.city}</div>}
+                    <div style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>{pharmacy.name}</div>
+                    <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{pharmacy.address}</div>
+                    {pharmacy.suburb && <div style={{ fontSize: 12, color: '#64748b' }}>{pharmacy.suburb}, {pharmacy.city}</div>}
                   </div>
                 </div>
-                <div className="card-status-row">
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
                   {pharmacy.distance != null && (
-                    <span className="distance-chip"><FaMapMarkerAlt /> {pharmacy.distance! < 1 ? `${Math.round(pharmacy.distance! * 1000)}m` : `${pharmacy.distance!.toFixed(1)}km`}</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: '#e0f2fe', color: '#0284a8' }}><FaMapMarkerAlt size={10} /> {pharmacy.distance! < 1 ? `${Math.round(pharmacy.distance! * 1000)}m` : `${pharmacy.distance!.toFixed(1)}km`}</span>
                   )}
-                  {pharmacy.phone && <span className="distance-chip"><FiPhone /> {pharmacy.phone}</span>}
+                  {pharmacy.phone && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999, background: '#f0fdf4', color: '#059669' }}><FiPhone size={10} /> {pharmacy.phone}</span>}
                 </div>
-                <div className="card-actions" onClick={(e) => e.stopPropagation()}>
+                <div style={{ display: 'flex', gap: 8 }} onClick={(e) => e.stopPropagation()}>
                   {pharmacy.phone && (
-                    <a href={`tel:${pharmacy.phone}`} className="btn-outline-sm"><FiPhone /> Call</a>
+                    <a href={`tel:${pharmacy.phone}`} style={{ flex: 1, background: '#f8fafc', color: '#0284a8', border: '1.5px solid #0284a8', borderRadius: 10, padding: '8px 12px', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, textDecoration: 'none' }}><FiPhone size={14} /> Call</a>
                   )}
-                  <button className="btn-outline-sm" onClick={() => getDirections(pharmacy)}>
-                    <FaMapMarkerAlt /> Directions
+                  <button style={{ flex: 1, background: 'linear-gradient(135deg, #0284a8, #02C39A)', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 12px', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, boxShadow: '0 4px 14px rgba(2,132,168,0.3)' }} onClick={() => getDirections(pharmacy)}>
+                    <FaMapMarkerAlt size={13} /> Directions
                   </button>
                 </div>
               </div>
