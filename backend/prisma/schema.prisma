@@ -122,6 +122,7 @@ model Order {
   createdAt       DateTime @default(now())
   expiresAt       DateTime
   items           OrderItem[]
+  pharmacy        Pharmacy @relation(fields: [pharmacyId], references: [id])
 }
 
 model OrderItem {

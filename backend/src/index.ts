@@ -10,15 +10,18 @@ import { initSocket } from './lib/socket';
 
 dotenv.config();
 
+import cron from 'node-cron';
 import authRoutes from './routes/auth';
 import medicineRoutes from './routes/medicines';
 import pharmacyRoutes from './routes/pharmacies';
 import adminRoutes from './routes/admin';
 import cartRoutes from './routes/cart';
+import prescriptionRoutes from './routes/prescriptions';
 import { errorHandler, notFound } from './middleware/errorHandler';
 import { cleanupExpiredReservations } from './controllers/cartController';
 import complianceRoutes from './routes/compliance';
 import { runMcazScraper } from './services/mcaz/scraper';
+import { syncMedicinesWithMCAZ, syncPharmaciesWithMCAZ } from './services/mcazScraper';
 
 const app = express();
 const httpServer = createServer(app);
@@ -69,6 +72,7 @@ app.use('/api/pharmacies', pharmacyRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/compliance', complianceRoutes);
+app.use('/api/prescriptions', prescriptionRoutes);
 
 // 404 & Error handling
 app.use('/uploads', express.static('public/uploads'));
@@ -100,6 +104,23 @@ httpServer.listen(PORT, () => {
       .finally(() => setTimeout(scheduleMcaz, MCAZ_INTERVAL_MS));
   }, MCAZ_INTERVAL_MS);
   console.log('   MCAZ scraper scheduled (first run in 24 h)');
+
+  // Daily MCAZ medicine/pharmacy sync at 02:00
+  cron.schedule('0 2 * * *', async () => {
+    console.log('[cron] Starting daily MCAZ sync...');
+    try {
+      const medResult = await syncMedicinesWithMCAZ();
+      console.log(`[cron] Medicines sync: ${medResult.updated}/${medResult.total} updated, ${medResult.errors.length} errors`);
+    } catch (err) {
+      console.error('[cron] Medicines sync failed:', err);
+    }
+    try {
+      const phResult = await syncPharmaciesWithMCAZ();
+      console.log(`[cron] Pharmacies sync: ${phResult.updated}/${phResult.total} updated, ${phResult.errors.length} errors`);
+    } catch (err) {
+      console.error('[cron] Pharmacies sync failed:', err);
+    }
+  });
 });
 
 export default app;
