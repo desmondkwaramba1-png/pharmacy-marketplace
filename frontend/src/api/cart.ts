@@ -240,7 +240,20 @@ export const cartApi = {
 
     if (!cartItems || cartItems.length === 0) throw new Error('Cart is empty for this pharmacy');
 
-    const subtotal = cartItems.reduce((sum, item) => sum + (Number(item.medicine?.standard_price || 0) * item.quantity), 0);
+    // Fetch actual pharmacy prices (not standard_price) so price_at_booking is accurate
+    const { data: invPrices } = await supabase
+      .from('pharmacy_inventory')
+      .select('medicine_id, price')
+      .eq('pharmacy_id', pharmacyId)
+      .in('medicine_id', cartItems.map(ci => ci.medicine_id));
+
+    const priceMap = new Map<string, number>();
+    invPrices?.forEach(inv => priceMap.set(inv.medicine_id, Number(inv.price)));
+
+    const getPrice = (ci: any) =>
+      priceMap.get(ci.medicine_id) ?? Number(ci.medicine?.standard_price ?? 0);
+
+    const subtotal = cartItems.reduce((sum, item) => sum + getPrice(item) * item.quantity, 0);
     const total = subtotal + DELIVERY_FEE;
 
     // 2. Create the Order with payment & delivery info
@@ -272,13 +285,13 @@ export const cartApi = {
       throw new Error(msg || 'Failed to create order');
     }
 
-    // 3. Create Order Items
+    // 3. Create Order Items using actual pharmacy prices
     await supabase.from('order_items').insert(
       cartItems.map(ci => ({
         order_id: order.id,
         medicine_id: ci.medicine_id,
         quantity: ci.quantity,
-        price_at_booking: ci.medicine?.standard_price || 0
+        price_at_booking: getPrice(ci)
       }))
     );
 

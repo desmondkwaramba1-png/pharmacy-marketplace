@@ -339,19 +339,10 @@ export const adminApi = {
   getOrder: async (bookingRef: string) => {
     const pharmacyId = await getMyPharmacyId();
 
-    // First look up the order without pharmacy filter so we can give a helpful message
-    const { data, error } = await supabase
-      .from('orders')
-      .select(`
-        *,
-        pharmacy:pharmacies(id, name, address, suburb, city),
-        items:order_items(
-          *,
-          medicine:medicines(*)
-        )
-      `)
-      .eq('booking_ref', bookingRef.toUpperCase())
-      .single();
+    // Use SECURITY DEFINER RPC to bypass RLS (pharmacist uid ≠ patient uid)
+    const { data, error } = await supabase.rpc('get_order_by_ref', {
+      p_booking_ref: bookingRef.toUpperCase()
+    });
 
     if (error || !data) throw new Error('Booking reference not found. Please check the code and try again.');
 
