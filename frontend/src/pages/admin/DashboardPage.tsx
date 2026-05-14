@@ -49,31 +49,40 @@ export default function DashboardPage() {
 
         {/* Stats grid */}
         <div className="stats-grid" style={{ marginTop: 16 }}>
-          <div className="stat-card">
-            <div className="stat-icon"><FiBox color="var(--color-primary)" /></div>
-            <div className="stat-value">{analytics?.totalMedicines ?? 0}</div>
-            <div className="stat-label">Total Medicines</div>
+          <div className="stat-card" style={{ background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px rgba(2,132,168,0.15)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, #0284a8, #02C39A)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}><FiBox color="#fff" size={20} /></div>
+            <div className="stat-value" style={{ color: '#0f172a', fontWeight: 800 }}>{analytics?.totalMedicines ?? 0}</div>
+            <div className="stat-label" style={{ color: '#64748b' }}>Total Medicines</div>
           </div>
-          <div className="stat-card">
-            <div className="stat-icon"><FiSearch color="var(--color-primary)" /></div>
-            <div className="stat-value">{analytics?.weeklySearches ?? 0}</div>
-            <div className="stat-label">Searches This Week</div>
+          <div className="stat-card" style={{ background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px rgba(124,58,237,0.15)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, #7C3AED, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}><FiSearch color="#fff" size={20} /></div>
+            <div className="stat-value" style={{ color: '#0f172a', fontWeight: 800 }}>{analytics?.weeklySearches ?? 0}</div>
+            <div className="stat-label" style={{ color: '#64748b' }}>Searches This Week</div>
           </div>
-          <div className="stat-card">
-            <div className="stat-icon"><FiMapPin color="var(--color-primary)" /></div>
-            <div className="stat-value">{analytics?.directionRequests ?? 0}</div>
-            <div className="stat-label">Directions</div>
+          <div className="stat-card" style={{ background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px rgba(5,150,105,0.15)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, #059669, #34d399)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}><FiMapPin color="#fff" size={20} /></div>
+            <div className="stat-value" style={{ color: '#0f172a', fontWeight: 800 }}>{analytics?.directionRequests ?? 0}</div>
+            <div className="stat-label" style={{ color: '#64748b' }}>Directions</div>
           </div>
-          <div className="stat-card">
-            <div className="stat-icon"><FiStar color="#F59E0B" /></div>
-            <div className="stat-value">{analytics?.avgRating ?? '—'}</div>
-            <div className="stat-label">Avg Rating</div>
+          <div className="stat-card" style={{ background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px rgba(217,119,6,0.15)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, #D97706, #fbbf24)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}><FiStar color="#fff" size={20} /></div>
+            <div className="stat-value" style={{ color: '#0f172a', fontWeight: 800 }}>{analytics?.avgRating ?? '—'}</div>
+            <div className="stat-label" style={{ color: '#64748b' }}>Avg Rating</div>
           </div>
         </div>
 
         {/* Inventory status bars */}
-        <div className="info-section" style={{ marginTop: 16 }}>
-          <div className="info-section-title">Inventory Status</div>
+        <div className="info-section" style={{ marginTop: 16, background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#0284a8', marginBottom: 4 }}>Overview</div>
+          <div className="info-section-title" style={{ color: '#0f172a', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 12 }}>Inventory Status</div>
           <div className="inventory-status-bars" style={{ padding: 0 }}>
             <div className="status-bar-item">
               <div className="status-bar-label">
@@ -106,12 +115,13 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick actions */}
-        <div className="info-section" style={{ marginTop: 16 }}>
-          <div className="info-section-title">Quick Actions</div>
+        <div className="info-section" style={{ marginTop: 16, background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#0284a8', marginBottom: 4 }}>Actions</div>
+          <div className="info-section-title" style={{ color: '#0f172a', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 12 }}>Quick Actions</div>
           <div className="quick-actions">
             <button
               id="add-medicine-btn"
-              className="btn btn-primary btn-sm"
+              style={{ background: 'linear-gradient(135deg, #0284a8, #02C39A)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 16px', fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 14px rgba(2,132,168,0.3)', display: 'flex', alignItems: 'center', gap: 6 }}
               onClick={() => navigate('/admin/inventory?action=add')}
             >
               <FiPlus /> Add Medicine

@@ -195,9 +195,9 @@ export default function InventoryPage() {
 
   return (
     <div className="page">
-      <header className="app-header">
-        <h1 className="app-header-title">Inventory</h1>
-        <button id="add-medicine-btn" className="btn btn-primary btn-sm" onClick={() => setShowModal(true)}><FiPlus /> Add</button>
+      <header style={{ background: 'linear-gradient(135deg, #b8eaf3 0%, #d4f5ec 50%, #e8f8f5 100%)', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 1px 8px rgba(0,0,0,0.06)', borderBottom: '1px solid rgba(2,132,168,0.12)' }}>
+        <h1 style={{ color: '#0f172a', fontSize: 18, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>Inventory</h1>
+        <button id="add-medicine-btn" style={{ background: 'linear-gradient(135deg, #0284a8, #02C39A)', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 16px', fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 14px rgba(2,132,168,0.3)', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => setShowModal(true)}><FiPlus size={15} /> Add</button>
       </header>
 
       <div className="page-content">
@@ -257,7 +257,7 @@ export default function InventoryPage() {
               (edit.price || '') !== (item.price?.toString() || '');
 
             return (
-              <div key={item.id} className="inventory-item">
+              <div key={item.id} className="inventory-item" style={{ background: '#fff', border: '1.5px solid #e2e8f0', borderLeft: `3px solid ${edit.stockStatus === 'in_stock' ? '#059669' : edit.stockStatus === 'low_stock' ? '#D97706' : '#dc2626'}`, borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', transition: 'box-shadow 0.2s ease' }}>
                 <div className="inventory-item-header" style={{ display: 'flex', gap: 12 }}>
                   <MedicineIcon category={item.medicine.category} name={item.medicine.genericName} imageUrl={item.medicine.imageUrl} size={40} borderRadius={8} />
                   <div style={{ flex: 1 }}>
@@ -337,12 +337,11 @@ export default function InventoryPage() {
                 <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
                   {isDirty && (
                     <button
-                      className="btn btn-primary btn-sm"
-                      style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                      style={{ flex: 1, background: isSaving ? '#e2e8f0' : 'linear-gradient(135deg, #0284a8, #02C39A)', color: isSaving ? '#94a3b8' : '#fff', border: 'none', borderRadius: 10, padding: '10px 16px', fontWeight: 700, fontSize: 13, cursor: isSaving ? 'not-allowed' : 'pointer', boxShadow: isSaving ? 'none' : '0 4px 14px rgba(2,132,168,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                       onClick={() => handleUpdate(item)}
                       disabled={isSaving}
                     >
-                      {isSaving ? 'Saving...' : <><FiSave /> Update Stock</>}
+                      {isSaving ? 'Saving...' : <><FiSave size={14} /> Update Stock</>}
                     </button>
                   )}
                   <button

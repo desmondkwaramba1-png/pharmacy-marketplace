@@ -39,13 +39,15 @@ model Pharmacy {
   isActive       Boolean @default(true)
   ownerId        String? @unique
 
-  // MCAZ compliance fields
-  mcazLicenseNumber   String?   // Must match mcaz_premises.license_number
+  mcazLicenseNumber   String?
   mcazVerified        Boolean   @default(false)
   mcazVerifiedAt      DateTime?
   mcazSuspended       Boolean   @default(false)
   mcazSuspendReason   String?
-  marketplaceStatus   String    @default("pending") // pending | active | suspended
+  marketplaceStatus   String    @default("pending")
+  licenseNumber       String?
+  licenseExpiry       DateTime?
+  licenseValid        Boolean   @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -67,20 +69,23 @@ model Medicine {
   standardPrice Float?
   imageUrl      String?
 
-  // MCAZ compliance fields
-  mcazRegNumber        String?  // Links to mcaz_medicines.registration_number
-  distributionCategory String   @default("OTC") // OTC | PIM | PP
+  mcazRegNumber        String?
+  distributionCategory String   @default("OTC")
   requiresPrescription Boolean  @default(false)
-  advertisingClass     String   @default("freely_advertised") // freely_advertised | restricted | no_public_ad
+  advertisingClass     String   @default("freely_advertised")
   isMcazVerified       Boolean  @default(false)
   isBanned             Boolean  @default(false)
+  otcAllowed           Boolean  @default(true)
+  mcazRegistered       Boolean  @default(false)
+  mcazSchedule         String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  inventory  PharmacyInventory[]
-  cartItems  CartItem[]
-  orderItems OrderItem[]
+  inventory     PharmacyInventory[]
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  prescriptions Prescription[]
 }
 
 model PharmacyInventory {
@@ -102,30 +107,31 @@ model PharmacyInventory {
 }
 
 model Order {
-  id             String   @id @default(cuid())
-  bookingRef     String   @unique
-  userId         String?
-  pharmacyId     String
-  totalAmount    Float    @default(0)
-  deliveryFee    Float    @default(0)
-  status         String   @default("pending") // pending | confirmed | out_for_delivery | delivered | collected | cancelled | expired
-  paymentMethod  String   @default("in_person") // online | in_person
-  paymentStatus  String   @default("pending")  // pending | paid | failed
-  deliveryMethod String   @default("pickup")   // pickup | delivery
+  id              String   @id @default(cuid())
+  bookingRef      String   @unique
+  userId          String?
+  pharmacyId      String
+  totalAmount     Float    @default(0)
+  deliveryFee     Float    @default(0)
+  status          String   @default("pending") // pending | confirmed | out_for_delivery | delivered | collected | cancelled | expired
+  paymentMethod   String   @default("in_person") // online | in_person
+  paymentStatus   String   @default("pending") // pending | paid | failed
+  deliveryMethod  String   @default("pickup") // pickup | delivery
   deliveryAddress String?
-  deliveryNotes  String?
-  createdAt      DateTime @default(now())
-  expiresAt      DateTime
-  items          OrderItem[]
+  deliveryNotes   String?
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime
+  items           OrderItem[]
+  pharmacy        Pharmacy @relation(fields: [pharmacyId], references: [id])
 }
 
 model OrderItem {
-  id             String  @id @default(cuid())
+  id             String   @id @default(cuid())
   orderId        String
   medicineId     String
-  quantity       Int     @default(1)
-  priceAtBooking Float   @default(0)
-  order          Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  quantity       Int      @default(1)
+  priceAtBooking Float    @default(0)
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   medicine       Medicine @relation(fields: [medicineId], references: [id])
 }
 
@@ -136,6 +142,21 @@ model SearchLog {
   userLng      Float?
   resultsCount Int      @default(0)
   searchedAt   DateTime @default(now())
+}
+
+model Prescription {
+  id         String    @id @default(cuid())
+  userId     String?
+  medicineId String?
+  fileUrl    String
+  status     String    @default("pending") // pending | verified | rejected
+  verifiedAt DateTime?
+  expiresAt  DateTime?
+  notes      String?
+  createdAt  DateTime  @default(now())
+
+  medicine  Medicine?  @relation(fields: [medicineId], references: [id])
+  cartItems CartItem[]
 }
 
 model Cart {
@@ -149,18 +170,20 @@ model Cart {
 }
 
 model CartItem {
-  id          String   @id @default(cuid())
-  cartId      String
-  pharmacyId  String
-  medicineId  String
-  quantity    Int      @default(1)
-  reservedAt  DateTime @default(now())
-  expiresAt   DateTime
-  status      String   @default("reserved") // reserved | expired | checked_out
+  id             String   @id @default(cuid())
+  cartId         String
+  pharmacyId     String
+  medicineId     String
+  quantity       Int      @default(1)
+  reservedAt     DateTime @default(now())
+  expiresAt      DateTime
+  status         String   @default("reserved") // reserved | expired | checked_out
+  prescriptionId String?
 
-  cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  medicine Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
-  pharmacy Pharmacy @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
+  cart         Cart          @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  medicine     Medicine      @relation(fields: [medicineId], references: [id], onDelete: Cascade)
+  pharmacy     Pharmacy      @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
+  prescription Prescription? @relation(fields: [prescriptionId], references: [id])
 
   @@unique([cartId, pharmacyId, medicineId])
 }
