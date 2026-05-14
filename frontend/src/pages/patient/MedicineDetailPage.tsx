@@ -91,15 +91,28 @@ export default function MedicineDetailPage() {
   const outOfStock = medicine.availability.filter((a) => a.stockStatus === 'out_of_stock');
 
   return (
-    <div className="page">
-      <header className="app-header">
-        <button className="back-btn" onClick={() => navigate(-1)} aria-label="Back"><FiChevronLeft /></button>
-        <h1 className="app-header-title">{medicine.genericName}</h1>
-        <button
-          className="btn-icon"
-          onClick={() => navigate(`/map${lat ? `?lat=${lat}&lng=${lng}` : ''}`)}
-          aria-label="View on map"
-        ><FiMap /></button>
+    <div className="page" style={{ animation: 'mdp-fadeIn 0.4s ease both' }}>
+      <style>{`
+        @keyframes mdp-fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
+      <header style={{
+        background: 'linear-gradient(135deg, #0f172a 0%, #014d5e 60%, #01697a 100%)',
+        padding: '12px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
+      }}>
+        <button onClick={() => navigate(-1)} aria-label="Back" style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', flexShrink: 0 }}>
+          <FiChevronLeft size={20} />
+        </button>
+        <h1 style={{ flex: 1, color: '#fff', fontSize: 16, fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{medicine.genericName}</h1>
+        <button onClick={() => navigate(`/map${lat ? `?lat=${lat}&lng=${lng}` : ''}`)} aria-label="View on map" style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', flexShrink: 0 }}>
+          <FiMap size={18} />
+        </button>
       </header>
 
       {/* MCAZ compliance banners */}
@@ -129,17 +142,19 @@ export default function MedicineDetailPage() {
       )}
 
       {/* Hero */}
-      <div className="medicine-detail-hero" style={{ flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-        {medicine.imageUrl ? (
-          <img src={medicine.imageUrl} alt={medicine.genericName} style={{ width: 120, height: 120, borderRadius: 20, objectFit: 'cover', background: '#f5f5f5', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5-7v-2h-2V8h-2v2H8v2h2v2h2v-2h2z'/%3E%3C/svg%3E"; }} />
-        ) : (
-          <div className="medicine-detail-hero-icon" style={{ width: 80, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FaPills size={40} /></div>
-        )}
+      <div style={{ background: 'linear-gradient(135deg, #0284a8, #02C39A)', padding: '32px 20px 28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+        <div style={{ width: 88, height: 88, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', overflow: 'hidden' }}>
+          {medicine.imageUrl ? (
+            <img src={medicine.imageUrl} alt={medicine.genericName} style={{ width: 88, height: 88, objectFit: 'cover' }} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.style.display = 'none'; }} />
+          ) : (
+            <FaPills size={42} color="#0284a8" />
+          )}
+        </div>
         <div style={{ textAlign: 'center' }}>
-          <div className="medicine-detail-name">
-            {medicine.genericName} {medicine.dosage && <span style={{ fontSize: 16, color: 'var(--color-text-secondary)', fontWeight: 'normal' }}>{medicine.dosage}</span>}
+          <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
+            {medicine.genericName} {medicine.dosage && <span style={{ fontSize: 15, fontWeight: 500, opacity: 0.85 }}>{medicine.dosage}</span>}
           </div>
-          <div className="medicine-detail-meta" style={{ justifyContent: 'center', marginTop: 4 }}>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>
             {[medicine.form, medicine.brandName, medicine.category].filter(Boolean).join(' · ')}
           </div>
         </div>
@@ -199,7 +214,10 @@ export default function MedicineDetailPage() {
 
           {/* In stock / low stock first */}
           {available.map((avail) => (
-            <div key={avail.pharmacyId} className="pharmacy-availability-card">
+            <div key={avail.pharmacyId} className="pharmacy-availability-card" style={{ background: '#fff', border: '1.5px solid #e2e8f0', borderLeft: '3px solid #0284a8', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px rgba(2,132,168,0.15)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}
+            >
               <div className="pharmacy-avail-name">{avail.pharmacyName}</div>
               <div className="pharmacy-avail-address">{avail.address}{avail.suburb ? `, ${avail.suburb}` : ''}</div>
               <div className="pharmacy-avail-row">
@@ -208,7 +226,7 @@ export default function MedicineDetailPage() {
                   <span className="distance-chip"><FaMapMarkerAlt /> {formatDistance(avail.distance)}</span>
                 )}
                 {avail.price != null && (
-                  <span className="medicine-price">${avail.price.toFixed(2)}</span>
+                  <span style={{ fontSize: 18, fontWeight: 800, color: '#0284a8', letterSpacing: '-0.02em' }}>${avail.price.toFixed(2)}</span>
                 )}
               </div>
               <div className="last-updated">Updated {timeAgo(avail.lastUpdated)}</div>
@@ -219,19 +237,17 @@ export default function MedicineDetailPage() {
                   </button>
                 ) : !isAuthenticated ? (
                   <button
-                    className="btn btn-primary btn-sm"
-                    style={{ flex: 1, minWidth: '120px' }}
+                    style={{ flex: 1, minWidth: '120px', background: 'linear-gradient(135deg, #0284a8, #02C39A)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 16px', fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 14px rgba(2,132,168,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
                     }}
                   >
-                    <FiLogIn /> Sign In to Reserve
+                    <FiLogIn size={15} /> Sign In to Reserve
                   </button>
                 ) : requiresRx ? (
                   <button
-                    className="btn btn-sm"
-                    style={{ flex: 1, minWidth: '120px', background: '#d97706', color: '#fff' }}
+                    style={{ flex: 1, minWidth: '120px', background: 'linear-gradient(135deg, #D97706, #f59e0b)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 16px', fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 14px rgba(217,119,6,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                     onClick={(e) => {
                       e.stopPropagation();
                       addToCart(avail.pharmacyId, medicine.id);
@@ -241,14 +257,13 @@ export default function MedicineDetailPage() {
                   </button>
                 ) : (
                   <button
-                    className="btn btn-primary btn-sm"
-                    style={{ flex: 1, minWidth: '120px' }}
+                    style={{ flex: 1, minWidth: '120px', background: 'linear-gradient(135deg, #0284a8, #02C39A)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 16px', fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 14px rgba(2,132,168,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                     onClick={(e) => {
                       e.stopPropagation();
                       addToCart(avail.pharmacyId, medicine.id);
                     }}
                   >
-                    <FiShoppingCart /> Add to Cart
+                    <FiShoppingCart size={15} /> Add to Cart
                   </button>
                 )}
                 <div style={{ display: 'flex', gap: '8px', flex: 1 }}>

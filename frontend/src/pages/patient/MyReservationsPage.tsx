@@ -31,15 +31,27 @@ export default function MyReservationsPage() {
 
   return (
     <div className="page">
-      <header className="app-header">
-        <button className="back-btn" onClick={() => navigate(-1)}><FiChevronLeft /></button>
-        <h1 className="app-header-title">My Orders</h1>
+      <header style={{
+        background: 'linear-gradient(135deg, #0f172a 0%, #014d5e 60%, #01697a 100%)',
+        padding: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
+      }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', flexShrink: 0 }}>
+          <FiChevronLeft size={20} />
+        </button>
+        <h1 style={{ color: '#fff', fontSize: 18, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>My Reservations</h1>
       </header>
 
       <div className="page-content">
         {(!orders || orders.length === 0) ? (
           <div className="empty-state">
-            <div className="empty-state-icon">💊</div>
+            <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'linear-gradient(135deg, #0284a8, #02C39A)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 32, color: '#fff' }}>💊</div>
             <div className="empty-state-title">No orders yet</div>
             <p>Your medicine orders will appear here.</p>
             <button className="btn btn-primary" onClick={() => navigate('/')} style={{ marginTop: 20 }}>
@@ -58,14 +70,14 @@ export default function MyReservationsPage() {
   );
 }
 
-const STATUS_CONFIG: Record<string, { color: string; label: string; emoji: string }> = {
-  pending:          { color: 'var(--color-primary)',        label: 'Pending',          emoji: '⏳' },
-  confirmed:        { color: '#0891b2',                     label: 'Confirmed',        emoji: '✅' },
-  out_for_delivery: { color: '#7c3aed',                     label: 'Out for Delivery', emoji: '🚚' },
-  delivered:        { color: 'var(--color-success)',        label: 'Delivered',        emoji: '📦' },
-  collected:        { color: 'var(--color-success)',        label: 'Collected',        emoji: '🎉' },
-  expired:          { color: 'var(--color-error)',          label: 'Expired',          emoji: '❌' },
-  cancelled:        { color: 'var(--color-text-secondary)', label: 'Cancelled',        emoji: '🚫' },
+const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string; emoji: string }> = {
+  pending:          { color: '#D97706', bg: '#fef3c7',  label: 'Pending',          emoji: '⏳' },
+  confirmed:        { color: '#059669', bg: '#d1fae5',  label: 'Confirmed',        emoji: '✅' },
+  out_for_delivery: { color: '#7C3AED', bg: '#ede9fe',  label: 'Out for Delivery', emoji: '🚚' },
+  delivered:        { color: '#059669', bg: '#d1fae5',  label: 'Delivered',        emoji: '📦' },
+  collected:        { color: '#059669', bg: '#d1fae5',  label: 'Collected',        emoji: '🎉' },
+  expired:          { color: '#dc2626', bg: '#fee2e2',  label: 'Expired',          emoji: '❌' },
+  cancelled:        { color: '#64748b', bg: '#f1f5f9',  label: 'Cancelled',        emoji: '🚫' },
 };
 
 function OrderCard({ order }: { order: Order }) {
@@ -89,29 +101,25 @@ function OrderCard({ order }: { order: Order }) {
     return () => clearInterval(timer);
   }, [order]);
 
-  const cfg = STATUS_CONFIG[order.status] ?? { color: 'var(--color-text)', label: order.status, emoji: '❓' };
+  const cfg = STATUS_CONFIG[order.status] ?? { color: '#64748b', bg: '#f1f5f9', label: order.status, emoji: '❓' };
   const isDelivery = order.deliveryMethod === 'delivery';
   const isPaidOnline = order.paymentMethod === 'online';
 
   return (
-    <div className="medicine-card" style={{ cursor: 'default' }}>
+    <div style={{ background: '#fff', border: '1.5px solid #e2e8f0', borderLeft: `3px solid ${cfg.color}`, borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: 16, cursor: 'default' }}>
       {/* Header */}
-      <div className="medicine-card-header">
-        <div className="medicine-icon">
-          <FaClinicMedical color={cfg.color} />
+      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 12 }}>
+        <div style={{ width: 40, height: 40, borderRadius: 10, background: cfg.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <FaClinicMedical color={cfg.color} size={18} />
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div className="medicine-name">{order.pharmacy?.name}</div>
-            <div style={{
-              fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-              padding: '2px 8px', borderRadius: 4,
-              background: `${cfg.color}20`, color: cfg.color
-            }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>{order.pharmacy?.name}</div>
+            <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: cfg.bg, color: cfg.color, whiteSpace: 'nowrap', marginLeft: 8 }}>
               {cfg.emoji} {cfg.label}
-            </div>
+            </span>
           </div>
-          <div className="medicine-meta">{order.pharmacy?.address}</div>
+          <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{order.pharmacy?.address}</div>
         </div>
       </div>
 
@@ -148,8 +156,8 @@ function OrderCard({ order }: { order: Order }) {
           {order.bookingRef}
         </div>
         {order.status === 'pending' && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: isExpiredLocally ? 'var(--color-error)' : 'var(--color-primary)', fontWeight: 600 }}>
-            <FiClock /> {timeLeft}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 999, background: isExpiredLocally ? '#fee2e2' : '#e0f2fe', color: isExpiredLocally ? '#dc2626' : '#0284a8', marginTop: 6 }}>
+            <FiClock size={12} /> {timeLeft}
           </div>
         )}
       </div>
@@ -173,7 +181,7 @@ function OrderCard({ order }: { order: Order }) {
           <div style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>
             {isPaidOnline && order.paymentStatus === 'paid' ? 'Paid:' : 'Total:'}
           </div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-primary)' }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: '#0284a8' }}>
             ${order.totalAmount?.toFixed(2)}
           </div>
           {isDelivery && order.deliveryFee > 0 && (

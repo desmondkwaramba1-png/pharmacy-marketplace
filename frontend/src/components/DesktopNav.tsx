@@ -25,11 +25,11 @@ export default function DesktopNav() {
   };
 
   return (
-    <header className="desktop-nav-header">
+    <header className="desktop-nav-header" style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(0,0,0,0.08)', position: 'sticky', top: 0, zIndex: 200 }}>
       <div className="desktop-nav-container">
-        <NavLink to="/home" className="desktop-nav-logo">
-          <div className="header-logo">💊</div>
-          <span className="logo-text">MediFind <span className="text-secondary">ZW</span></span>
+        <NavLink to="/home" className="desktop-nav-logo" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #0284a8, #02C39A)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>💊</div>
+          <span style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.03em' }}>MediFind <span style={{ color: '#0284a8' }}>ZW</span></span>
         </NavLink>
 
         <form className="desktop-search-form" onSubmit={handleSearch}>
@@ -50,6 +50,7 @@ export default function DesktopNav() {
               key={link.to}
               to={link.to}
               className={({ isActive }) => `desktop-nav-link ${isActive ? 'active' : ''}`}
+              style={({ isActive }) => ({ color: isActive ? '#0284a8' : undefined })}
             >
               <span className="link-icon">{link.icon}</span>
               <span className="link-label">{link.label}</span>
@@ -58,7 +59,7 @@ export default function DesktopNav() {
         </nav>
 
         <div className="desktop-nav-actions">
-          <button 
+          <button
             className="desktop-cart-btn"
             onClick={() => {
               if (isAuthenticated) {
@@ -70,7 +71,7 @@ export default function DesktopNav() {
           >
             <FiShoppingCart size={20} />
             {cart && cart.itemCount > 0 && (
-              <span className="cart-badge">{cart.itemCount}</span>
+              <span className="cart-badge" style={{ background: 'linear-gradient(135deg, #0284a8, #02C39A)', color: '#fff', boxShadow: '0 2px 8px rgba(2,132,168,0.4)' }}>{cart.itemCount}</span>
             )}
           </button>
 
