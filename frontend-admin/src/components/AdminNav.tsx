@@ -1,19 +1,29 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FiHome, FiBox, FiLogOut, FiShoppingBag } from 'react-icons/fi';
 import { FaClinicMedical, FaPills } from 'react-icons/fa';
+import NotificationBell from './NotificationBell';
 
 const tabs = [
-  { to: '/admin/dashboard', label: 'Home', icon: <FiHome size={22} /> },
-  { to: '/admin/pickups', label: 'Pickups', icon: <FiShoppingBag size={22} /> },
+  { to: '/admin/dashboard', label: 'Home',      icon: <FiHome size={22} /> },
+  { to: '/admin/pickups',   label: 'Pickups',   icon: <FiShoppingBag size={22} /> },
   { to: '/admin/inventory', label: 'Inventory', icon: <FiBox size={22} /> },
-  { to: '/admin/profile', label: 'Pharmacy', icon: <FaClinicMedical size={22} /> },
+  { to: '/admin/profile',   label: 'Pharmacy',  icon: <FaClinicMedical size={22} /> },
 ];
+
+const pageTitles: Record<string, string> = {
+  '/admin/dashboard': 'Dashboard',
+  '/admin/pickups':   'Order Pickup Portal',
+  '/admin/inventory': 'Inventory Management',
+  '/admin/profile':   'Pharmacy Profile',
+};
 
 export default function AdminNav() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const pageTitle = pageTitles[location.pathname] ?? 'Admin';
 
   const handleLogout = () => {
     logout();
@@ -31,12 +41,28 @@ export default function AdminNav() {
             <div className="admin-user-email">{user?.email}</div>
           </div>
         </div>
-        <button onClick={handleLogout} className="btn-icon" title="Logout" aria-label="Logout">
-          <FiLogOut size={20} color="var(--color-text)" />
-        </button>
+
+        {/* Desktop: page title (centre) */}
+        <div className="admin-header-title-desktop">{pageTitle}</div>
+
+        {/* Right-side actions: notification bell + logout */}
+        <div className="admin-header-actions">
+          <NotificationBell />
+          <button onClick={handleLogout} className="btn btn-secondary btn-sm" style={{ gap: 6 }}>
+            <FiLogOut size={15} /> Logout
+          </button>
+        </div>
+
+        {/* Mobile: bell + logout icon */}
+        <div className="admin-header-logout-mobile" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <NotificationBell />
+          <button onClick={handleLogout} className="btn-icon" title="Logout" aria-label="Logout">
+            <FiLogOut size={20} color="var(--color-text)" />
+          </button>
+        </div>
       </header>
 
-      {/* Bottom tabs */}
+      {/* Bottom tabs (mobile only) */}
       <nav className="bottom-nav admin-bottom-nav" aria-label="Admin navigation">
         {tabs.map((tab) => (
           <NavLink

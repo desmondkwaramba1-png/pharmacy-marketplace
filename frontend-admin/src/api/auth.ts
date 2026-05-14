@@ -38,8 +38,11 @@ const mapOrder = (order: any): any => ({
   pharmacyId: order.pharmacy_id,
   totalAmount: Number(order.total_amount),
   status: order.status,
+  paymentMethod: order.payment_method || 'in_person',
+  paymentStatus: order.payment_status || 'pending',
   createdAt: order.created_at,
   expiresAt: order.expires_at,
+  pharmacy: order.pharmacy ?? null,
   items: (order.items || []).map(mapOrderItem)
 });
 
@@ -47,8 +50,8 @@ export const authApi = {
   login: async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    return { 
-      token: data.session?.access_token || '', 
+    return {
+      token: data.session?.access_token || '',
       user: {
         id: data.user.id,
         email: data.user.email || '',
@@ -77,38 +80,30 @@ export const authApi = {
 export const adminApi = {
   getInventory: async (params?: { status?: string; q?: string; page?: number }): Promise<{ inventory: InventoryItem[]; total: number; stats: any[] }> => {
     const pharmacyId = await getMyPharmacyId();
-    
-    // 1. Build query for inventory items
+
     let query = supabase
       .from('pharmacy_inventory')
-      .select(`
-        *,
-        medicine:medicines(*)
-      `)
+      .select(`*, medicine:medicines(*)`)
       .eq('pharmacy_id', pharmacyId);
 
-    if (params?.status) {
-      query = query.eq('stock_status', params.status);
-    }
+    if (params?.status) query = query.eq('stock_status', params.status);
 
     if (params?.q) {
       const { data: medData } = await supabase
         .from('medicines')
         .select('id')
         .or(`generic_name.ilike.%${params.q}%,brand_name.ilike.%${params.q}%`);
-      
-      const medIds = medData?.map(m => m.id) || [];
-      query = query.in('medicine_id', medIds);
+      query = query.in('medicine_id', (medData || []).map(m => m.id));
     }
 
-    const { data, error, count } = await query.order('last_updated', { ascending: false });
+    const { data, error } = await query.order('last_updated', { ascending: false });
     if (error) throw error;
 
     const statsQuery = await supabase
       .from('pharmacy_inventory')
       .select('stock_status')
       .eq('pharmacy_id', pharmacyId);
-    
+
     const statsMap: Record<string, number> = {};
     (statsQuery.data || []).forEach(item => {
       statsMap[item.stock_status] = (statsMap[item.stock_status] || 0) + 1;
@@ -143,11 +138,7 @@ export const adminApi = {
       }
     } as InventoryItem));
 
-    return {
-      inventory,
-      total: count || inventory.length,
-      stats
-    };
+    return { inventory, total: data?.length || 0, stats };
   },
 
   updateInventory: async (medicineId: string, payload: { stockStatus: string; quantity?: number; price?: number }): Promise<InventoryItem> => {
@@ -165,10 +156,7 @@ export const adminApi = {
       })
       .eq('pharmacy_id', pharmacyId)
       .eq('medicine_id', medicineId)
-      .select(`
-        *,
-        medicine:medicines(*)
-      `)
+      .select(`*, medicine:medicines(*)`)
       .single();
 
     if (error) throw error;
@@ -218,10 +206,7 @@ export const adminApi = {
         price: payload.price,
         updated_by: user?.id
       }])
-      .select(`
-        *,
-        medicine:medicines(*)
-      `)
+      .select(`*, medicine:medicines(*)`)
       .single();
 
     if (invErr) throw invErr;
@@ -264,7 +249,6 @@ export const adminApi = {
       .eq('id', pharmacyId)
       .single();
     if (error) throw error;
-    
     return {
       id: data.id,
       name: data.name,
@@ -280,7 +264,6 @@ export const adminApi = {
       mcazVerified: data.mcaz_verified,
       mcazSuspended: data.mcaz_suspended,
       mcazSuspendReason: data.mcaz_suspend_reason,
-      mcazVerifiedAt: data.mcaz_verified_at,
     } as Pharmacy;
   },
 
@@ -302,7 +285,6 @@ export const adminApi = {
       .eq('id', pharmacyId)
       .select()
       .single();
-    
     if (error) throw error;
     return data as any;
   },
@@ -313,12 +295,11 @@ export const adminApi = {
       .from('pharmacy_inventory')
       .select('stock_status, quantity, reserved_quantity')
       .eq('pharmacy_id', pharmacyId);
-    
+
     const metrics = (items || []).reduce((acc, curr) => {
       acc.total++;
       const available = curr.quantity - (curr.reserved_quantity || 0);
       const effectiveStatus = available <= 0 ? 'out_of_stock' : curr.stock_status;
-
       if (effectiveStatus === 'in_stock') acc.inStock++;
       else if (effectiveStatus === 'low_stock') acc.lowStock++;
       else if (effectiveStatus === 'out_of_stock') acc.outOfStock++;
@@ -330,23 +311,22 @@ export const adminApi = {
       inStock: metrics.inStock,
       lowStock: metrics.lowStock,
       outOfStock: metrics.outOfStock,
-      weeklySearches: 0, 
+      weeklySearches: 0,
       directionRequests: 0,
       avgRating: 5.0,
     };
   },
 
+  // Uses SECURITY DEFINER RPC to bypass RLS — pharmacist uid ≠ patient user_id
   getOrder: async (bookingRef: string) => {
     const pharmacyId = await getMyPharmacyId();
 
-    // Use SECURITY DEFINER RPC to bypass RLS (pharmacist uid ≠ patient uid)
-    const { data, error } = await supabase.rpc('get_order_by_ref', {
+    const { data, error } = await supabase.rpc('get_order_for_pickup', {
       p_booking_ref: bookingRef.toUpperCase()
     });
 
     if (error || !data) throw new Error('Booking reference not found. Please check the code and try again.');
 
-    // Order exists but belongs to a different pharmacy
     if (data.pharmacy_id !== pharmacyId) {
       const ph = data.pharmacy as any;
       const phName = ph?.name || 'another pharmacy';
@@ -359,9 +339,56 @@ export const adminApi = {
     return mapOrder(data);
   },
 
-  collectOrder: async (bookingRef: string) => {
+  collectOrder: async (bookingRef: string, items?: { medicineId: string; quantity: number; pharmacyId: string }[]) => {
     const { error } = await supabase.rpc('collect_order', { p_booking_ref: bookingRef.toUpperCase() });
     if (error) throw error;
+
+    // Belt-and-suspenders: also call checkout_inventory per item for older DB deployments
+    if (items && items.length > 0) {
+      await Promise.all(
+        items.map(item =>
+          supabase.rpc('checkout_inventory', {
+            p_pharmacy_id: item.pharmacyId,
+            p_medicine_id: item.medicineId,
+            p_qty: item.quantity,
+          })
+        )
+      );
+    }
     return true;
-  }
+  },
+
+  // Notifications
+  getNotifications: async () => {
+    const pharmacyId = await getMyPharmacyId();
+    const { data, error } = await supabase
+      .from('pharmacy_notifications')
+      .select('*')
+      .eq('pharmacy_id', pharmacyId)
+      .order('created_at', { ascending: false })
+      .limit(30);
+    if (error) throw error;
+    return data || [];
+  },
+
+  markNotificationsRead: async () => {
+    const pharmacyId = await getMyPharmacyId();
+    await supabase
+      .from('pharmacy_notifications')
+      .update({ is_read: true })
+      .eq('pharmacy_id', pharmacyId)
+      .eq('is_read', false);
+  },
+
+  subscribeToNotifications: (pharmacyId: string, onNew: (n: any) => void) => {
+    return supabase
+      .channel(`pharmacy-notifications-${pharmacyId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'pharmacy_notifications',
+        filter: `pharmacy_id=eq.${pharmacyId}`,
+      }, payload => onNew(payload.new))
+      .subscribe();
+  },
 };

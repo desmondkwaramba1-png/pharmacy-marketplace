@@ -224,34 +224,37 @@ export const cartApi = {
     options: CheckoutOptions
   ): Promise<{ message: string; bookingRef: string; orderId: string; expiresAt: string; paymentStatus: string; transactionId?: string }> => {
     const { data: { user } } = await supabase.auth.getUser();
-    const cartId = await getOrCreateCartId();
-    const bookingRef = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+    // Use cached cart — do NOT call getOrCreateCartId() fresh here as it can
+    // resolve a different cart after login/session transitions.
+    if (!cachedCartId) cachedCartId = await getOrCreateCartId();
+    const cartId = cachedCartId;
+
+    const bookingRef = `MF-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24h to collect
 
     const DELIVERY_FEE = options.deliveryMethod === 'delivery' ? 5.00 : 0;
 
     // 1. Get current cart items for this pharmacy
-    const { data: cartItems } = await supabase
+    const { data: cartItems, error: cartErr } = await supabase
       .from('cart_items')
-      .select(`*, medicine:medicines(standard_price)`)
+      .select(`*, medicine:medicines(id, standard_price)`)
       .eq('cart_id', cartId)
       .eq('pharmacy_id', pharmacyId)
       .eq('status', 'reserved');
 
+    if (cartErr) throw new Error('Failed to read cart: ' + cartErr.message);
     if (!cartItems || cartItems.length === 0) throw new Error('Cart is empty for this pharmacy');
 
-    // Fetch actual pharmacy prices (not standard_price) so price_at_booking is accurate
+    // Fetch actual pharmacy prices so price_at_booking is accurate
     const { data: invPrices } = await supabase
       .from('pharmacy_inventory')
       .select('medicine_id, price')
       .eq('pharmacy_id', pharmacyId)
       .in('medicine_id', cartItems.map(ci => ci.medicine_id));
 
-    const priceMap = new Map<string, number>();
-    invPrices?.forEach(inv => priceMap.set(inv.medicine_id, Number(inv.price)));
-
-    const getPrice = (ci: any) =>
-      priceMap.get(ci.medicine_id) ?? Number(ci.medicine?.standard_price ?? 0);
+    const priceMap = new Map((invPrices || []).map(p => [p.medicine_id, Number(p.price)]));
+    const getPrice = (ci: any) => priceMap.get(ci.medicine_id) ?? Number(ci.medicine?.standard_price ?? 0);
 
     const subtotal = cartItems.reduce((sum, item) => sum + getPrice(item) * item.quantity, 0);
     const total = subtotal + DELIVERY_FEE;
