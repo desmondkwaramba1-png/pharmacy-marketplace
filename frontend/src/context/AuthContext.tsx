@@ -26,6 +26,7 @@ export interface RegisterPharmacyData {
   phone?: string;
   latitude?: number;
   longitude?: number;
+  mcazLicenseNumber?: string;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -100,6 +101,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         is_active: true,
         latitude: data.latitude ?? 0,
         longitude: data.longitude ?? 0,
+        mcaz_license_number: data.mcazLicenseNumber || null,
+        mcaz_verified: !!data.mcazLicenseNumber,
+        license_valid: !!data.mcazLicenseNumber,
+        marketplace_status: data.mcazLicenseNumber ? 'active' : 'pending',
       }])
       .select()
       .single();

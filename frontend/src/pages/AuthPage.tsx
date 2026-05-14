@@ -189,11 +189,34 @@ function PharmacyForm({ onSuccess }: { onSuccess: () => void }) {
   const [suburb,    setSuburb]    = useState('');
   const [city,      setCity]      = useState('Harare');
   const [phone,     setPhone]     = useState('');
+  const [licenseNumber, setLicenseNumber] = useState('');
+  const [licenseStatus, setLicenseStatus] = useState<'idle'|'checking'|'valid'|'invalid'>('idle');
+  const [licenseData,   setLicenseData]   = useState<{premiseName?:string; expiryDate?:string} | null>(null);
   const [lat,       setLat]       = useState<number | undefined>();
   const [lng,       setLng]       = useState<number | undefined>();
   const [locating,  setLocating]  = useState(false);
   const [error,     setError]     = useState('');
   const [loading,   setLoading]   = useState(false);
+
+  const checkLicense = async () => {
+    const lic = licenseNumber.trim();
+    if (!lic) return;
+    setLicenseStatus('checking');
+    setLicenseData(null);
+    try {
+      const res = await fetch(`/api/compliance/premises/${encodeURIComponent(lic)}`);
+      if (res.ok) {
+        const data = await res.json();
+        const active = data.licenseStatus === 'Active' || data.licenseStatus === 'active';
+        setLicenseStatus(active ? 'valid' : 'invalid');
+        setLicenseData({ premiseName: data.premiseName, expiryDate: data.expiryDate });
+      } else {
+        setLicenseStatus('invalid');
+      }
+    } catch {
+      setLicenseStatus('invalid');
+    }
+  };
 
   const getLocation = () => {
     if (!navigator.geolocation) { setError('Geolocation not supported'); return; }
@@ -206,6 +229,10 @@ function PharmacyForm({ onSuccess }: { onSuccess: () => void }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (licenseStatus !== 'valid') {
+      setError('A valid MCAZ license is required to register your pharmacy. Please verify your license number first.');
+      return;
+    }
     setError('');
     setLoading(true);
     try {
@@ -214,6 +241,7 @@ function PharmacyForm({ onSuccess }: { onSuccess: () => void }) {
         firstName, lastName,
         pharmacyName: pharmName, address, suburb, city, phone,
         latitude: lat, longitude: lng,
+        mcazLicenseNumber: licenseNumber.trim(),
       };
       await registerPharmacy(data);
       setStep('done');
@@ -333,6 +361,56 @@ function PharmacyForm({ onSuccess }: { onSuccess: () => void }) {
           <div className="form-group">
             <label className="form-label">Phone (optional)</label>
             <input className="form-input" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+263 77 000 0000" />
+          </div>
+
+          {/* MCAZ License */}
+          <div className="form-group">
+            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              MCAZ License Number <span style={{ color: 'var(--color-error)', fontWeight: 700 }}>*</span>
+            </label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                className="form-input"
+                required
+                value={licenseNumber}
+                onChange={e => { setLicenseNumber(e.target.value); setLicenseStatus('idle'); setLicenseData(null); }}
+                placeholder="e.g. PH-0001 or your MCAZ license no."
+                style={{
+                  borderColor: licenseStatus === 'valid' ? 'var(--color-success)' : licenseStatus === 'invalid' ? 'var(--color-error)' : undefined,
+                  flex: 1,
+                }}
+              />
+              <button
+                type="button"
+                onClick={checkLicense}
+                disabled={!licenseNumber.trim() || licenseStatus === 'checking'}
+                style={{
+                  flexShrink: 0, padding: '0 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                  background: 'linear-gradient(135deg, #0284a8, #02C39A)', color: 'white', fontWeight: 600, fontSize: 13,
+                  opacity: !licenseNumber.trim() || licenseStatus === 'checking' ? 0.6 : 1,
+                }}
+              >
+                {licenseStatus === 'checking' ? '…' : 'Verify'}
+              </button>
+            </div>
+            {licenseStatus === 'valid' && licenseData && (
+              <div style={{ marginTop: 8, padding: '10px 12px', borderRadius: 10, background: 'var(--color-success-bg)', border: '1px solid rgba(2,195,154,0.3)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <FiCheckCircle size={15} color="var(--color-success-text)" style={{ flexShrink: 0, marginTop: 1 }} />
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-success-text)' }}>✓ Valid MCAZ License</div>
+                  {licenseData.premiseName && <div style={{ fontSize: 12, color: 'var(--color-success-text)' }}>{licenseData.premiseName}</div>}
+                  {licenseData.expiryDate && <div style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Expires: {licenseData.expiryDate}</div>}
+                </div>
+              </div>
+            )}
+            {licenseStatus === 'invalid' && (
+              <div style={{ marginTop: 8, padding: '10px 12px', borderRadius: 10, background: 'var(--color-error-bg)', border: '1px solid rgba(232,93,93,0.2)', fontSize: 12, color: 'var(--color-error-text)', fontWeight: 500 }}>
+                ✗ License not found or inactive in the MCAZ register. Only pharmacies with valid MCAZ licenses can register.
+              </div>
+            )}
+            <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 5 }}>
+              Your license is verified against the official MCAZ premises register.
+            </div>
           </div>
 
           {/* Geolocation */}

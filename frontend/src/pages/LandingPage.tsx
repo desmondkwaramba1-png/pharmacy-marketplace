@@ -240,7 +240,7 @@ export default function LandingPage() {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         gap: 'clamp(16px, 4vw, 56px)', flexWrap: 'wrap',
       }}>
-        <span style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Built for pharmacies by pharmacy professionals</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Connecting patients with licensed pharmacies across Zimbabwe</span>
         <div style={{ width: 1, height: 18, background: '#334155' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 26, height: 26, borderRadius: 7, background: 'linear-gradient(135deg, #0284a8, #02C39A)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
