@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { medicinesApi } from '../../api/medicines';
@@ -48,6 +48,10 @@ export default function SearchResultsPage() {
 
   const [searchInput, setSearchInput] = useState(urlQuery);
   const debouncedInput = useDebounce(searchInput, 400);
+
+  useEffect(() => {
+    setSearchInput(urlQuery);
+  }, [urlQuery]);
   const [activeFilter, setActiveFilter] = useState('');
 
   const lat = coords?.lat ?? (urlLat ? parseFloat(urlLat) : null);
