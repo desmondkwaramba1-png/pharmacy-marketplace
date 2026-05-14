@@ -96,7 +96,9 @@ export default function MedicineDetailPage() {
         @keyframes mdp-fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
       <header style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #014d5e 60%, #01697a 100%)',
+        background: 'rgba(255,255,255,0.95)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         padding: '12px 16px',
         display: 'flex',
         alignItems: 'center',
@@ -104,13 +106,14 @@ export default function MedicineDetailPage() {
         position: 'sticky',
         top: 0,
         zIndex: 100,
-        boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
+        boxShadow: '0 1px 8px rgba(0,0,0,0.08)',
+        borderBottom: '1px solid #eef2f7',
       }}>
-        <button onClick={() => navigate(-1)} aria-label="Back" style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', flexShrink: 0 }}>
+        <button onClick={() => navigate(-1)} aria-label="Back" style={{ background: '#f1f5f9', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#475569', flexShrink: 0 }}>
           <FiChevronLeft size={20} />
         </button>
-        <h1 style={{ flex: 1, color: '#fff', fontSize: 16, fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{medicine.genericName}</h1>
-        <button onClick={() => navigate(`/map${lat ? `?lat=${lat}&lng=${lng}` : ''}`)} aria-label="View on map" style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', flexShrink: 0 }}>
+        <h1 style={{ flex: 1, color: '#0f172a', fontSize: 16, fontWeight: 800, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.02em' }}>{medicine.genericName}</h1>
+        <button onClick={() => navigate(`/map${lat ? `?lat=${lat}&lng=${lng}` : ''}`)} aria-label="View on map" style={{ background: '#f1f5f9', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#0284a8', flexShrink: 0 }}>
           <FiMap size={18} />
         </button>
       </header>
@@ -142,19 +145,20 @@ export default function MedicineDetailPage() {
       )}
 
       {/* Hero */}
-      <div style={{ background: 'linear-gradient(135deg, #0284a8, #02C39A)', padding: '32px 20px 28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-        <div style={{ width: 88, height: 88, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', overflow: 'hidden' }}>
+      <div style={{ background: 'linear-gradient(135deg, #b8eaf3 0%, #d4f5ec 50%, #e8f8f5 100%)', padding: '32px 20px 28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.5) 0%, transparent 65%)', top: -100, left: -80, pointerEvents: 'none' }} />
+        <div style={{ width: 88, height: 88, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 32px rgba(2,132,168,0.2)', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
           {medicine.imageUrl ? (
             <img src={medicine.imageUrl} alt={medicine.genericName} style={{ width: 88, height: 88, objectFit: 'cover' }} onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.style.display = 'none'; }} />
           ) : (
             <FaPills size={42} color="#0284a8" />
           )}
         </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>
-            {medicine.genericName} {medicine.dosage && <span style={{ fontSize: 15, fontWeight: 500, opacity: 0.85 }}>{medicine.dosage}</span>}
+        <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+          <div style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.03em' }}>
+            {medicine.genericName} {medicine.dosage && <span style={{ fontSize: 15, fontWeight: 500, color: '#475569' }}>{medicine.dosage}</span>}
           </div>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>
+          <div style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>
             {[medicine.form, medicine.brandName, medicine.category].filter(Boolean).join(' · ')}
           </div>
         </div>

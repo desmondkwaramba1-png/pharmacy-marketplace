@@ -104,44 +104,47 @@ export default function SearchResultsPage() {
         }
       `}</style>
 
-      {/* Sticky search header — dark gradient */}
+      {/* Sticky search header — white glassmorphism */}
       <header style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #014d5e 60%, #01697a 100%)',
-        padding: '12px 16px',
+        background: 'rgba(255,255,255,0.95)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        padding: '10px 16px',
         display: 'flex',
         alignItems: 'center',
         gap: 10,
         position: 'sticky',
         top: 0,
         zIndex: 100,
-        boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
+        boxShadow: '0 1px 8px rgba(0,0,0,0.08)',
+        borderBottom: '1px solid #eef2f7',
       }}>
         <button
           onClick={() => navigate('/')}
           aria-label="Back"
-          style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', flexShrink: 0 }}
+          style={{ background: '#f1f5f9', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#475569', flexShrink: 0 }}
         >
           <FiChevronLeft size={20} />
         </button>
-        <form onSubmit={handleSearch} style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', borderRadius: 12, padding: '0 12px', height: 40, gap: 8, border: '1px solid rgba(255,255,255,0.2)' }}>
-          <FiSearch color="rgba(255,255,255,0.7)" size={16} />
+        <form onSubmit={handleSearch} style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#f8fafc', borderRadius: 12, padding: '0 12px', height: 40, gap: 8, border: '1.5px solid #e2e8f0' }}>
+          <FiSearch color="#0284a8" size={16} />
           <input
             type="search"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search medicines..."
             autoComplete="off"
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 15, color: '#fff' }}
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 15, color: '#0f172a' }}
           />
           {searchInput && (
-            <button type="button" onClick={() => setSearchInput('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', display: 'flex', padding: 0 }}><FiX size={15} /></button>
+            <button type="button" onClick={() => setSearchInput('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', display: 'flex', padding: 0 }}><FiX size={15} /></button>
           )}
         </form>
         <button
           onClick={() => navigate('/map')}
           title="View Map"
           aria-label="Map view"
-          style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', flexShrink: 0 }}
+          style={{ background: '#f1f5f9', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#475569', flexShrink: 0 }}
         >
           <FiMap size={18} />
         </button>
@@ -150,7 +153,7 @@ export default function SearchResultsPage() {
             if (isAuthenticated) setCartOpen(true);
             else navigate(`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`);
           }}
-          style={{ position: 'relative', background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', flexShrink: 0 }}
+          style={{ position: 'relative', background: 'linear-gradient(135deg, #0284a8, #02C39A)', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', flexShrink: 0, boxShadow: '0 2px 8px rgba(2,132,168,0.3)' }}
           aria-label="Cart"
         >
           <FiShoppingCart size={18} />

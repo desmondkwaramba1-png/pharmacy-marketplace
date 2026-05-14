@@ -32,7 +32,7 @@ export default function MyReservationsPage() {
   return (
     <div className="page">
       <header style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #014d5e 60%, #01697a 100%)',
+        background: 'linear-gradient(135deg, #b8eaf3 0%, #d4f5ec 50%, #e8f8f5 100%)',
         padding: '16px',
         display: 'flex',
         alignItems: 'center',
@@ -40,12 +40,13 @@ export default function MyReservationsPage() {
         position: 'sticky',
         top: 0,
         zIndex: 100,
-        boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
+        boxShadow: '0 1px 8px rgba(0,0,0,0.06)',
+        borderBottom: '1px solid rgba(2,132,168,0.12)',
       }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', flexShrink: 0 }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#0284a8', flexShrink: 0 }}>
           <FiChevronLeft size={20} />
         </button>
-        <h1 style={{ color: '#fff', fontSize: 18, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>My Reservations</h1>
+        <h1 style={{ color: '#0f172a', fontSize: 18, fontWeight: 800, margin: 0, letterSpacing: '-0.03em' }}>My Reservations</h1>
       </header>
 
       <div className="page-content">

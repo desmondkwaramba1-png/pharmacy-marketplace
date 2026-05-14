@@ -492,23 +492,27 @@ export default function AuthPage() {
       minHeight: '100dvh',
       display: 'flex',
       flexDirection: 'column',
-      background: 'linear-gradient(160deg, #012d35 0%, #028090 50%, #01697a 100%)',
-      backgroundSize: '200% 200%',
-      animation: 'gradientShift 10s ease infinite',
+      background: 'linear-gradient(135deg, #b8eaf3 0%, #d4f5ec 50%, #e8f8f5 100%)',
       padding: 'clamp(16px, 4vw, 40px)',
       alignItems: 'center',
       justifyContent: 'center',
+      position: 'relative',
+      overflow: 'hidden',
     }}>
+      <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.55) 0%, transparent 65%)', top: -180, left: -100, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(2,195,154,0.18) 0%, transparent 70%)', bottom: -80, right: '10%', pointerEvents: 'none' }} />
       {/* Card */}
       <div style={{
-        background: 'var(--color-surface)',
-        borderRadius: 'var(--radius-2xl)',
+        background: '#ffffff',
+        borderRadius: 20,
         padding: 'clamp(24px, 4vw, 40px)',
         width: '100%',
         maxWidth: 460,
-        boxShadow: '0 24px 64px rgba(0,0,0,0.25)',
-        border: '1px solid rgba(255,255,255,0.12)',
-        animation: 'fadeScaleIn 0.4s cubic-bezier(0.34,1.56,0.64,1)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
+        border: '1.5px solid #e2e8f0',
+        animation: 'auth-fadeScaleIn 0.4s cubic-bezier(0.34,1.56,0.64,1)',
+        position: 'relative',
+        zIndex: 1,
       }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
