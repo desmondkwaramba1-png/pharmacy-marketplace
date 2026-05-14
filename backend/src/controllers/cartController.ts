@@ -50,7 +50,7 @@ async function getOrCreateCart(req: Request) {
 export async function addToCart(req: Request, res: Response): Promise<void> {
   try {
     const sessionId = getSessionId(req);
-    const { pharmacyId, medicineId, quantity = 1 } = req.body;
+    const { pharmacyId, medicineId, quantity = 1, prescriptionId } = req.body;
 
     if (!pharmacyId || !medicineId) {
       res.status(400).json({ error: 'pharmacyId and medicineId are required' });
@@ -71,6 +71,34 @@ export async function addToCart(req: Request, res: Response): Promise<void> {
     const available = inventory.quantity - inventory.reservedQuantity;
     if (available < quantity) {
       res.status(409).json({ error: 'Not enough stock available', available });
+      return;
+    }
+
+    // Check if medicine requires prescription
+    if (inventory.medicine.requiresPrescription) {
+      if (!prescriptionId) {
+        res.status(403).json({
+          error: 'This medicine requires a prescription',
+          requiresPrescription: true,
+        });
+        return;
+      }
+      // Verify prescription exists and is valid
+      const prescription = await prisma.prescription.findUnique({
+        where: { id: prescriptionId as string },
+      });
+      if (!prescription || prescription.status === 'rejected') {
+        res.status(403).json({
+          error: 'Valid prescription required',
+          requiresPrescription: true,
+        });
+        return;
+      }
+    }
+
+    // Check if pharmacy license is valid
+    if (!inventory.pharmacy.licenseValid) {
+      res.status(403).json({ error: "This pharmacy's license is not valid" });
       return;
     }
 
@@ -115,6 +143,7 @@ export async function addToCart(req: Request, res: Response): Promise<void> {
           quantity,
           expiresAt,
           status: 'reserved',
+          prescriptionId: prescriptionId ?? null,
         },
       });
 
