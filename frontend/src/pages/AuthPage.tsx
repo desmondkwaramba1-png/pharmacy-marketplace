@@ -151,7 +151,7 @@ function PatientForm({ onSuccess }: { onSuccess: () => void }) {
           {error}
         </div>
       )}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+      <div className="auth-name-grid">
         <div className="form-group">
           <label className="form-label">First Name</label>
           <input className="form-input" required value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="John" />
@@ -314,7 +314,7 @@ function PharmacyForm({ onSuccess }: { onSuccess: () => void }) {
 
       {step === 'account' && (
         <form onSubmit={e => { e.preventDefault(); setStep('pharmacy'); }} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div className="auth-name-grid">
             <div className="form-group">
               <label className="form-label">First Name</label>
               <input className="form-input" required value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="John" />
@@ -348,7 +348,7 @@ function PharmacyForm({ onSuccess }: { onSuccess: () => void }) {
             <label className="form-label">Street Address</label>
             <input className="form-input" required value={address} onChange={e => setAddress(e.target.value)} placeholder="123 Samora Machel Ave" />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div className="auth-name-grid">
             <div className="form-group">
               <label className="form-label">Suburb</label>
               <input className="form-input" value={suburb} onChange={e => setSuburb(e.target.value)} placeholder="Avondale" />
@@ -499,6 +499,12 @@ export default function AuthPage() {
       position: 'relative',
       overflow: 'hidden',
     }}>
+      <style>{`
+        .auth-name-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        @media (max-width: 480px) {
+          .auth-name-grid { grid-template-columns: 1fr; }
+        }
+      `}</style>
       <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.55) 0%, transparent 65%)', top: -180, left: -100, pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(2,195,154,0.18) 0%, transparent 70%)', bottom: -80, right: '10%', pointerEvents: 'none' }} />
       {/* Card */}

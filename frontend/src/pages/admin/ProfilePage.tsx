@@ -73,6 +73,12 @@ export default function ProfilePage() {
 
   return (
     <div className="page">
+      <style>{`
+        .profile-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        @media (max-width: 480px) {
+          .profile-2col { grid-template-columns: 1fr; }
+        }
+      `}</style>
       <header style={{ background: 'linear-gradient(135deg, #b8eaf3 0%, #d4f5ec 50%, #e8f8f5 100%)', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 1px 8px rgba(0,0,0,0.06)', borderBottom: '1px solid rgba(2,132,168,0.12)' }}>
         <div>
           <p style={{ fontSize: 11, fontWeight: 700, color: '#0284a8', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 2px' }}>Admin</p>

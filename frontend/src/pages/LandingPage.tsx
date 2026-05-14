@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaPills, FaShieldAlt, FaMapMarkerAlt } from 'react-icons/fa';
-import { FiSearch, FiShoppingCart, FiClock, FiArrowRight, FiCheckCircle, FiStar } from 'react-icons/fi';
+import { FiSearch, FiShoppingCart, FiClock, FiArrowRight, FiCheckCircle, FiStar, FiMenu, FiX } from 'react-icons/fi';
 import { MdLocalPharmacy, MdVerified } from 'react-icons/md';
 
 const NAV_LINKS = ['About Us', 'How It Works', 'FAQs', 'Contact Us'];
@@ -44,6 +45,7 @@ const HOW_STEPS = [
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div style={{ minHeight: '100dvh', background: '#ffffff', fontFamily: "'Inter', sans-serif", overflowX: 'hidden' }}>
@@ -72,7 +74,7 @@ export default function LandingPage() {
           </span>
         </div>
 
-        <div style={{ display: 'flex', gap: 32, alignItems: 'center' }} className="landing-nav-links">
+        <div className="lp-nav-links">
           {NAV_LINKS.map(link => (
             <span key={link} style={{ fontSize: 14, fontWeight: 500, color: '#64748b', cursor: 'pointer', transition: 'color 0.15s' }}
               onMouseEnter={e => (e.currentTarget.style.color = '#0284a8')}
@@ -82,7 +84,7 @@ export default function LandingPage() {
         </div>
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <button onClick={() => navigate('/login')}
+          <button onClick={() => navigate('/login')} className="lp-login-btn"
             style={{
               fontSize: 14, fontWeight: 600, padding: '9px 20px', borderRadius: 10,
               border: '1.5px solid #e2e8f0', background: 'none', color: '#374151', cursor: 'pointer',
@@ -91,7 +93,7 @@ export default function LandingPage() {
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#0284a8'; (e.currentTarget as HTMLElement).style.color = '#0284a8'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#e2e8f0'; (e.currentTarget as HTMLElement).style.color = '#374151'; }}
           >Log In</button>
-          <button onClick={() => navigate('/login?tab=patient')}
+          <button onClick={() => navigate('/login?tab=patient')} className="lp-signup-btn"
             style={{
               fontSize: 14, fontWeight: 700, padding: '9px 22px', borderRadius: 10,
               background: 'linear-gradient(135deg, #0284a8, #02C39A)', color: 'white', border: 'none', cursor: 'pointer',
@@ -100,8 +102,37 @@ export default function LandingPage() {
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 20px rgba(2,132,168,0.45)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 14px rgba(2,132,168,0.35)'; }}
           >Sign Up</button>
+          <button className="lp-hamburger" onClick={() => setMobileMenuOpen(o => !o)} aria-label="Menu">
+            {mobileMenuOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+          </button>
         </div>
       </nav>
+
+      {/* Mobile menu overlay */}
+      <div className={`lp-mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+          <span style={{ fontSize: 20, fontWeight: 800, color: '#1a202c', letterSpacing: '-0.04em' }}>
+            Medi<span style={{ color: '#0284a8' }}>Find</span>
+            <span style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', marginLeft: 3 }}>ZW</span>
+          </span>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0f172a' }} onClick={() => setMobileMenuOpen(false)}><FiX size={24} /></button>
+        </div>
+        {NAV_LINKS.map(link => (
+          <span key={link} style={{ fontSize: 18, fontWeight: 600, color: '#0f172a', cursor: 'pointer', padding: '8px 0', borderBottom: '1px solid #f1f5f9' }}
+            onClick={() => setMobileMenuOpen(false)}
+          >{link}</span>
+        ))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
+          <button onClick={() => { navigate('/login'); setMobileMenuOpen(false); }}
+            style={{ fontSize: 15, fontWeight: 600, padding: '12px 20px', borderRadius: 10, border: '1.5px solid #e2e8f0', background: 'none', color: '#374151', cursor: 'pointer' }}>
+            Log In
+          </button>
+          <button onClick={() => { navigate('/login?tab=patient'); setMobileMenuOpen(false); }}
+            style={{ fontSize: 15, fontWeight: 700, padding: '12px 22px', borderRadius: 10, background: 'linear-gradient(135deg, #0284a8, #02C39A)', color: 'white', border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(2,132,168,0.35)' }}>
+            Sign Up Free
+          </button>
+        </div>
+      </div>
 
       {/* ── HERO ─────────────────────────────────────────────── */}
       <section style={{
@@ -425,9 +456,28 @@ export default function LandingPage() {
           from { opacity: 0; transform: translateY(18px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+
+        .lp-nav-links { display: flex; gap: 32px; align-items: center; }
+        .lp-hamburger { display: none; cursor: pointer; background: none; border: none; color: #0f172a; padding: 4px; }
+        .lp-login-btn { display: inline-block; }
+        .lp-signup-btn { display: inline-block; }
+        .lp-mobile-menu { display: none; }
+
         @media (max-width: 768px) {
-          .landing-nav-links { display: none !important; }
+          .lp-nav-links { display: none; }
+          .lp-hamburger { display: flex; align-items: center; justify-content: center; }
+          .lp-login-btn { display: none; }
+          .lp-signup-btn { display: none; }
+          .lp-mobile-menu.open {
+            display: flex; flex-direction: column;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: white; z-index: 200;
+            padding: 24px 28px;
+            gap: 4px;
+            overflow-y: auto;
+          }
         }
+
         @media (prefers-reduced-motion: reduce) {
           * { animation: none !important; transition: none !important; }
         }
