@@ -363,53 +363,68 @@ function PharmacyForm({ onSuccess }: { onSuccess: () => void }) {
             <input className="form-input" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+263 77 000 0000" />
           </div>
 
-          {/* MCAZ License */}
-          <div className="form-group">
-            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              MCAZ License Number <span style={{ color: 'var(--color-error)', fontWeight: 700 }}>*</span>
-            </label>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input
-                className="form-input"
-                required
-                value={licenseNumber}
-                onChange={e => { setLicenseNumber(e.target.value); setLicenseStatus('idle'); setLicenseData(null); }}
-                placeholder="e.g. PH-0001 or your MCAZ license no."
-                style={{
-                  borderColor: licenseStatus === 'valid' ? 'var(--color-success)' : licenseStatus === 'invalid' ? 'var(--color-error)' : undefined,
-                  flex: 1,
-                }}
-              />
-              <button
-                type="button"
-                onClick={checkLicense}
-                disabled={!licenseNumber.trim() || licenseStatus === 'checking'}
-                style={{
-                  flexShrink: 0, padding: '0 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                  background: 'linear-gradient(135deg, #0284a8, #02C39A)', color: 'white', fontWeight: 600, fontSize: 13,
-                  opacity: !licenseNumber.trim() || licenseStatus === 'checking' ? 0.6 : 1,
-                }}
-              >
-                {licenseStatus === 'checking' ? '…' : 'Verify'}
-              </button>
+          {/* MCAZ License — required gate */}
+          <div style={{ background: 'linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%)', border: '1.5px solid #c4b5fd', borderRadius: 14, padding: '12px 14px', marginBottom: 2 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #7C3AED, #5B21B6)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ fontSize: 14 }}>🛡️</span>
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: '#4C1D95', letterSpacing: '-0.02em' }}>MCAZ License Required</div>
+                <div style={{ fontSize: 11, color: '#6D28D9' }}>Only licensed pharmacies can join MediFind ZW</div>
+              </div>
             </div>
-            {licenseStatus === 'valid' && licenseData && (
-              <div style={{ marginTop: 8, padding: '10px 12px', borderRadius: 10, background: 'var(--color-success-bg)', border: '1px solid rgba(2,195,154,0.3)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <FiCheckCircle size={15} color="var(--color-success-text)" style={{ flexShrink: 0, marginTop: 1 }} />
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-success-text)' }}>✓ Valid MCAZ License</div>
-                  {licenseData.premiseName && <div style={{ fontSize: 12, color: 'var(--color-success-text)' }}>{licenseData.premiseName}</div>}
-                  {licenseData.expiryDate && <div style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Expires: {licenseData.expiryDate}</div>}
+            <div className="form-group" style={{ margin: 0 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: '#4C1D95', display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
+                License Number <span style={{ color: '#dc2626' }}>*</span>
+              </label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  className="form-input"
+                  required
+                  value={licenseNumber}
+                  onChange={e => { setLicenseNumber(e.target.value); setLicenseStatus('idle'); setLicenseData(null); }}
+                  placeholder="e.g. PH-0001 or MCAZ-2024-001"
+                  style={{
+                    borderColor: licenseStatus === 'valid' ? '#059669' : licenseStatus === 'invalid' ? '#dc2626' : '#c4b5fd',
+                    background: 'white',
+                    flex: 1,
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={checkLicense}
+                  disabled={!licenseNumber.trim() || licenseStatus === 'checking'}
+                  style={{
+                    flexShrink: 0, padding: '0 16px', height: 48, borderRadius: 10, border: 'none', cursor: 'pointer',
+                    background: licenseStatus === 'valid' ? 'linear-gradient(135deg, #059669, #10B981)' : 'linear-gradient(135deg, #7C3AED, #5B21B6)',
+                    color: 'white', fontWeight: 700, fontSize: 13,
+                    opacity: !licenseNumber.trim() || licenseStatus === 'checking' ? 0.6 : 1,
+                    boxShadow: '0 4px 12px rgba(124,58,237,0.3)',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {licenseStatus === 'checking' ? '⏳' : licenseStatus === 'valid' ? '✓ Verified' : 'Verify'}
+                </button>
+              </div>
+              {licenseStatus === 'valid' && licenseData && (
+                <div style={{ marginTop: 8, padding: '10px 12px', borderRadius: 10, background: '#D1FAE5', border: '1px solid #6EE7B7', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <FiCheckCircle size={15} color="#059669" style={{ flexShrink: 0, marginTop: 1 }} />
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: '#065F46' }}>✓ Active MCAZ License Confirmed</div>
+                    {licenseData.premiseName && <div style={{ fontSize: 12, fontWeight: 600, color: '#047857', marginTop: 1 }}>{licenseData.premiseName}</div>}
+                    {licenseData.expiryDate && <div style={{ fontSize: 11, color: '#059669' }}>Expires: {licenseData.expiryDate}</div>}
+                  </div>
                 </div>
+              )}
+              {licenseStatus === 'invalid' && (
+                <div style={{ marginTop: 8, padding: '10px 12px', borderRadius: 10, background: '#FEE2E2', border: '1px solid #FCA5A5', fontSize: 12, color: '#991B1B', fontWeight: 600 }}>
+                  ✗ Not found or inactive in the MCAZ premises register. Only pharmacies with a valid, active MCAZ license can register.
+                </div>
+              )}
+              <div style={{ fontSize: 11, color: '#6D28D9', marginTop: 6 }}>
+                💡 Format: PH-0001 or MCAZ-2024-001 — contact mcaz.co.zw if you need your number
               </div>
-            )}
-            {licenseStatus === 'invalid' && (
-              <div style={{ marginTop: 8, padding: '10px 12px', borderRadius: 10, background: 'var(--color-error-bg)', border: '1px solid rgba(232,93,93,0.2)', fontSize: 12, color: 'var(--color-error-text)', fontWeight: 500 }}>
-                ✗ License not found or inactive in the MCAZ register. Only pharmacies with valid MCAZ licenses can register.
-              </div>
-            )}
-            <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 5 }}>
-              Your license is verified against the official MCAZ premises register.
             </div>
           </div>
 

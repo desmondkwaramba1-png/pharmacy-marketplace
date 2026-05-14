@@ -321,38 +321,25 @@ export default function HomePage() {
         )}
 
         {/* How it works */}
-        <div style={{
-          marginTop: 28,
-          background: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-xl)',
-          padding: '16px 20px',
-          boxShadow: 'var(--shadow-sm)',
-        }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)', marginBottom: 12, textAlign: 'center' }}>
-            How it works
+        <div style={{ marginTop: 28, borderRadius: 20, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+          <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #014d5e 100%)', padding: '16px 20px 14px' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 4px' }}>Simple process</p>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.03em' }}>How MediFind Works</h3>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <div style={{ background: '#fff', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
             {[
-              { step: '①', label: 'Search' },
-              { step: '→', label: '' },
-              { step: '②', label: 'View Stocks' },
-              { step: '→', label: '' },
-              { step: '③', label: 'Get Directions' },
-            ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                <span style={{
-                  fontSize: item.step === '→' ? 16 : 20,
-                  color: item.step === '→' ? 'var(--color-border)' : 'var(--color-primary)',
-                  fontWeight: 700,
-                }}>
-                  {item.step}
-                </span>
-                {item.label && (
-                  <span style={{ fontSize: 11, color: 'var(--color-text-secondary)', fontWeight: 500, whiteSpace: 'nowrap' }}>
-                    {item.label}
-                  </span>
-                )}
+              { num: '01', title: 'Search', desc: 'Type any medicine name or browse by category', color: '#0284a8', bg: 'linear-gradient(135deg, #e0f4f8, #b3e5f0)' },
+              { num: '02', title: 'Compare & Reserve', desc: 'See real-time stock across pharmacies near you', color: '#7C3AED', bg: 'linear-gradient(135deg, #EDE9FE, #DDD6FE)' },
+              { num: '03', title: 'Collect', desc: 'Head to the pharmacy — your order is waiting', color: '#059669', bg: 'linear-gradient(135deg, #D1FAE5, #A7F3D0)' },
+            ].map((step) => (
+              <div key={step.num} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: step.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: step.color }}>{step.num}</span>
+                </div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.02em' }}>{step.title}</div>
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 1 }}>{step.desc}</div>
+                </div>
               </div>
             ))}
           </div>

@@ -789,19 +789,29 @@ img { max-width: 100%; display: block; }
 .category-chip-icon { font-size: 22px; line-height: 1; }
 .category-chip-label { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); }
 .category-chip:hover {
-  border-color: var(--color-primary);
-  background: linear-gradient(135deg, rgba(2,128,144,0.06), rgba(2,195,154,0.04));
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
 }
-.category-chip:hover .category-chip-label { color: var(--color-primary); }
 .category-chip.active {
-  border-color: var(--color-primary);
-  background: linear-gradient(135deg, rgba(2,128,144,0.12), rgba(2,195,154,0.08));
   transform: translateY(-3px) scale(1.03);
-  box-shadow: var(--shadow-md), 0 0 0 2px rgba(2,128,144,0.15);
+  box-shadow: var(--shadow-md);
 }
-.category-chip.active .category-chip-label { color: var(--color-primary); font-weight: 700; }
+/* Multi-color category chips — cycling through the landing-page palette */
+.category-chip:nth-child(8n+1)         { --chip-color: #0284a8; --chip-bg: linear-gradient(135deg, #e0f4f8, #b3e5f0); }
+.category-chip:nth-child(8n+2)         { --chip-color: #7C3AED; --chip-bg: linear-gradient(135deg, #EDE9FE, #DDD6FE); }
+.category-chip:nth-child(8n+3)         { --chip-color: #059669; --chip-bg: linear-gradient(135deg, #D1FAE5, #A7F3D0); }
+.category-chip:nth-child(8n+4)         { --chip-color: #D97706; --chip-bg: linear-gradient(135deg, #FEF3C7, #FDE68A); }
+.category-chip:nth-child(8n+5)         { --chip-color: #DC2626; --chip-bg: linear-gradient(135deg, #FEE2E2, #FECACA); }
+.category-chip:nth-child(8n+6)         { --chip-color: #0891b2; --chip-bg: linear-gradient(135deg, #CFFAFE, #A5F3FC); }
+.category-chip:nth-child(8n+7)         { --chip-color: #7C3AED; --chip-bg: linear-gradient(135deg, #F3E8FF, #E9D5FF); }
+.category-chip:nth-child(8n+8)         { --chip-color: #059669; --chip-bg: linear-gradient(135deg, #ECFDF5, #D1FAE5); }
+.category-chip:hover, .category-chip.active {
+  background: var(--chip-bg);
+  border-color: var(--chip-color);
+}
+.category-chip:hover .category-chip-label,
+.category-chip.active .category-chip-label { color: var(--chip-color); font-weight: 700; }
+.category-chip.active { box-shadow: var(--shadow-md), 0 0 0 2px color-mix(in srgb, var(--chip-color) 20%, transparent); }
 
 /* ============================================================
    HOME SCREEN
