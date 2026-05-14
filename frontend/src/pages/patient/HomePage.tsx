@@ -65,43 +65,59 @@ export default function HomePage() {
 
   return (
     <div className="page">
+      <style>{`
+        @keyframes hp-fadeInUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+      `}</style>
       {/* Hero header */}
-      <div className="home-header">
-        <div className="home-top-bar">
+      <div style={{
+        background: 'linear-gradient(135deg, #b8eaf3 0%, #d4f5ec 50%, #e8f8f5 100%)',
+        padding: '20px 16px 32px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Decorative orbs */}
+        <div style={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.55) 0%, transparent 65%)', top: -160, left: -80, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(2,195,154,0.18) 0%, transparent 70%)', bottom: -60, right: '20%', pointerEvents: 'none' }} />
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="home-greeting">🇿🇼 Zimbabwe</div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: '#0284a8', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)', borderRadius: 999, padding: '4px 12px', border: '1px solid rgba(2,132,168,0.2)' }}>
+              🇿🇼 Zimbabwe
+            </div>
             {isAuthenticated && user?.firstName && (
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'rgba(255,255,255,0.95)', marginTop: 2 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#0f172a', marginTop: 6, animation: 'hp-fadeInUp 0.4s ease both' }}>
                 Hello, {user.firstName} 👋
               </div>
             )}
           </div>
-          <div style={{ display: 'flex', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 8 }}>
             <button
-              className="btn-icon"
               onClick={() => {
                 if (isAuthenticated) setCartOpen(true);
                 else navigate(`/login?returnTo=${encodeURIComponent('/')}&message=${encodeURIComponent('Please sign in to access your cart')}`);
               }}
-              style={{ color: 'white', background: 'rgba(255,255,255,0.15)', borderRadius: '50%', padding: 8, border: '1px solid rgba(255,255,255,0.2)' }}
+              style={{ position: 'relative', color: '#0284a8', background: 'rgba(255,255,255,0.85)', borderRadius: '50%', padding: 10, border: '1.5px solid rgba(2,132,168,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
               aria-label="View Cart"
             >
               <FiShoppingCart size={20} />
               {cart && cart.itemCount > 0 && (
                 <span style={{
-                  position: 'absolute', top: -4, right: -4, background: 'var(--color-error)',
+                  position: 'absolute', top: -4, right: -4, background: '#ef4444',
                   color: 'white', fontSize: 10, minWidth: 18, height: 18, borderRadius: 9,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700,
-                  border: '2px solid #028090', padding: '0 4px',
+                  border: '2px solid white', padding: '0 4px',
                 }}>
                   {cart.itemCount}
                 </span>
               )}
             </button>
             <button
-              className="btn-icon"
               onClick={() => navigate('/login')}
-              style={{ color: 'white', background: 'rgba(255,255,255,0.15)', borderRadius: '50%', padding: 8, border: '1px solid rgba(255,255,255,0.2)' }}
+              style={{ color: '#0284a8', background: 'rgba(255,255,255,0.85)', borderRadius: '50%', padding: 10, border: '1.5px solid rgba(2,132,168,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
               aria-label={isAuthenticated ? 'Account' : 'Sign In'}
             >
               <FiUser size={20} />
@@ -109,11 +125,16 @@ export default function HomePage() {
           </div>
         </div>
 
-        <h1 className="home-title">Find Medicines<br />Near You</h1>
+        <div style={{ position: 'relative', zIndex: 1, animation: 'hp-fadeInUp 0.45s ease both' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#0284a8', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>MediFind ZW</p>
+          <h1 style={{ fontSize: 'clamp(22px, 6vw, 32px)', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.03em', lineHeight: 1.15, margin: '0 0 12px' }}>
+            Find Medicines<br />Near You
+          </h1>
+        </div>
 
-        <div className="location-chip">
-          <FiMapPin size={13} />
-          <span>{coords ? 'Using your location' : 'Harare, Zimbabwe'}</span>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)', border: '1.5px solid rgba(2,132,168,0.2)', borderRadius: 999, padding: '5px 14px', position: 'relative', zIndex: 1 }}>
+          <FiMapPin size={13} color="#0284a8" />
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#0284a8' }}>{coords ? 'Using your location' : 'Harare, Zimbabwe'}</span>
         </div>
       </div>
 
@@ -210,7 +231,10 @@ export default function HomePage() {
         {popular && popular.length > 0 && (
           <div style={{ marginTop: 28 }}>
             <div className="section-header">
-              <h2 className="section-title">Common Medicines</h2>
+              <div>
+                <p style={{ fontSize: 11, fontWeight: 700, color: '#0284a8', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 2px' }}>Available Now</p>
+                <h2 className="section-title" style={{ color: '#0f172a', fontWeight: 800, letterSpacing: '-0.03em', margin: 0 }}>Common Medicines</h2>
+              </div>
               <button
                 className="btn-ghost btn"
                 style={{ fontSize: 13, gap: 4 }}

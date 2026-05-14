@@ -69,9 +69,12 @@ export default function PickupPortalPage() {
 
   return (
     <div className="page">
+      <header style={{ background: 'linear-gradient(135deg, #b8eaf3 0%, #d4f5ec 50%, #e8f8f5 100%)', padding: '16px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 1px 8px rgba(0,0,0,0.06)', borderBottom: '1px solid rgba(2,132,168,0.12)' }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: '#0284a8', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 2px' }}>Admin</p>
+        <h1 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0, letterSpacing: '-0.03em' }}>Order Pickup Portal</h1>
+      </header>
       <div className="page-content" style={{ paddingTop: 20 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Order Pickup Portal</h1>
-        <p style={{ color: 'var(--color-text-secondary)', marginBottom: 24 }}>
+        <p style={{ color: '#64748b', marginBottom: 24, fontSize: 14, lineHeight: 1.6 }}>
           Enter the customer's confirmation code to process their reservation.
         </p>
 
@@ -114,7 +117,7 @@ export default function PickupPortalPage() {
           {/* Right panel: order details */}
           <div className="pickup-result-panel">
             {order ? (
-              <div className="medicine-card" style={{ cursor: 'default', border: '1px solid var(--color-border)' }}>
+              <div style={{ background: '#fff', border: '1.5px solid #e2e8f0', borderLeft: '3px solid #0284a8', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: 20, cursor: 'default' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
                   <div>
                     <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: 1 }}>{order.bookingRef}</div>

@@ -195,8 +195,8 @@ export default function InventoryPage() {
 
   return (
     <div className="page">
-      <header style={{ background: 'linear-gradient(135deg, #0f172a 0%, #014d5e 60%, #01697a 100%)', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 2px 12px rgba(0,0,0,0.25)' }}>
-        <h1 style={{ color: '#fff', fontSize: 18, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>Inventory</h1>
+      <header style={{ background: 'linear-gradient(135deg, #b8eaf3 0%, #d4f5ec 50%, #e8f8f5 100%)', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 1px 8px rgba(0,0,0,0.06)', borderBottom: '1px solid rgba(2,132,168,0.12)' }}>
+        <h1 style={{ color: '#0f172a', fontSize: 18, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>Inventory</h1>
         <button id="add-medicine-btn" style={{ background: 'linear-gradient(135deg, #0284a8, #02C39A)', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 16px', fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 14px rgba(2,132,168,0.3)', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => setShowModal(true)}><FiPlus size={15} /> Add</button>
       </header>
 

@@ -140,23 +140,23 @@ export default function CartDrawer() {
         }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: 'linear-gradient(135deg, #0f172a 0%, #014d5e 60%, #01697a 100%)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: 'linear-gradient(135deg, #b8eaf3 0%, #d4f5ec 50%, #e8f8f5 100%)', borderBottom: '1px solid rgba(2,132,168,0.12)' }}>
           {step !== 'cart' && step !== 'success' && step !== 'processing' ? (
-            <button onClick={back} style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }}><FiArrowLeft size={16} /></button>
+            <button onClick={back} style={{ background: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#0284a8' }}><FiArrowLeft size={16} /></button>
           ) : (
-            <h2 style={{ fontSize: '17px', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, letterSpacing: '-0.02em' }}>
-              <FiShoppingBag color="#02C39A" size={20} />
+            <h2 style={{ fontSize: '17px', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, letterSpacing: '-0.02em' }}>
+              <FiShoppingBag color="#0284a8" size={20} />
               {step === 'success' ? 'Order Confirmed' : 'Your Cart'}
             </h2>
           )}
           {step !== 'cart' && step !== 'success' && step !== 'processing' && (
-            <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#fff', margin: 0 }}>
+            <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', margin: 0 }}>
               {step === 'fulfillment' ? 'Fulfillment' :
                step === 'delivery-address' ? 'Delivery Address' :
                step === 'payment-method' ? 'Payment' : 'Card Details'}
             </h2>
           )}
-          <button onClick={closeDrawer} style={{ background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }}><FiX size={16} /></button>
+          <button onClick={closeDrawer} style={{ background: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#0284a8' }}><FiX size={16} /></button>
         </div>
 
         {/* Step: Success */}

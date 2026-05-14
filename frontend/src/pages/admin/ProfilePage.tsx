@@ -73,14 +73,16 @@ export default function ProfilePage() {
 
   return (
     <div className="page">
-      <header className="app-header">
-        <h1 className="app-header-title">Pharmacy Profile</h1>
+      <header style={{ background: 'linear-gradient(135deg, #b8eaf3 0%, #d4f5ec 50%, #e8f8f5 100%)', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 1px 8px rgba(0,0,0,0.06)', borderBottom: '1px solid rgba(2,132,168,0.12)' }}>
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#0284a8', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 2px' }}>Admin</p>
+          <h1 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0, letterSpacing: '-0.03em' }}>Pharmacy Profile</h1>
+        </div>
         <button
           id="save-profile-btn"
-          className="btn btn-primary btn-sm"
+          style={{ background: 'linear-gradient(135deg, #0284a8, #02C39A)', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 16px', fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 14px rgba(2,132,168,0.3)', display: 'flex', alignItems: 'center', gap: 6 }}
           onClick={handleSave}
           disabled={mutation.isPending}
-          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
         >
           {mutation.isPending ? 'Saving...' : saved ? <><FaCheckCircle /> Saved</> : <><FiSave /> Save</>}
         </button>
