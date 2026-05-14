@@ -276,6 +276,11 @@ export const adminApi = {
       phone: data.phone,
       email: data.email,
       isActive: data.is_active,
+      mcazLicenseNumber: data.mcaz_license_number,
+      mcazVerified: data.mcaz_verified,
+      mcazSuspended: data.mcaz_suspended,
+      mcazSuspendReason: data.mcaz_suspend_reason,
+      mcazVerifiedAt: data.mcaz_verified_at,
     } as Pharmacy;
   },
 
@@ -292,6 +297,7 @@ export const adminApi = {
         longitude: payload.longitude,
         phone: payload.phone,
         email: payload.email,
+        mcaz_license_number: payload.mcazLicenseNumber || null,
       })
       .eq('id', pharmacyId)
       .select()

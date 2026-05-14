@@ -30,6 +30,11 @@ CREATE TABLE IF NOT EXISTS pharmacies (
   logo_url TEXT,
   is_active BOOLEAN DEFAULT true NOT NULL,
   owner_id UUID REFERENCES auth.users(id),
+  mcaz_license_number TEXT,
+  mcaz_verified BOOLEAN DEFAULT false,
+  mcaz_verified_at TIMESTAMP WITH TIME ZONE,
+  mcaz_suspended BOOLEAN DEFAULT false,
+  mcaz_suspend_reason TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -179,11 +184,27 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Mark order as collected (in-person pickup)
+-- Mark order as collected and deduct inventory
 CREATE OR REPLACE FUNCTION collect_order(p_booking_ref TEXT)
 RETURNS VOID AS $$
+DECLARE
+  v_order orders%ROWTYPE;
+  v_item  order_items%ROWTYPE;
 BEGIN
+  SELECT * INTO v_order FROM orders WHERE booking_ref = p_booking_ref;
+  IF NOT FOUND THEN RETURN; END IF;
+
   UPDATE orders SET status = 'collected' WHERE booking_ref = p_booking_ref;
+
+  -- Deduct quantity and release reserved stock for each item
+  FOR v_item IN SELECT * FROM order_items WHERE order_id = v_order.id LOOP
+    UPDATE pharmacy_inventory
+    SET
+      quantity          = GREATEST(0, quantity - v_item.quantity),
+      reserved_quantity = GREATEST(0, reserved_quantity - v_item.quantity)
+    WHERE pharmacy_id = v_order.pharmacy_id
+      AND medicine_id = v_item.medicine_id;
+  END LOOP;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
