@@ -332,20 +332,33 @@ export const adminApi = {
 
   getOrder: async (bookingRef: string) => {
     const pharmacyId = await getMyPharmacyId();
+
+    // First look up the order without pharmacy filter so we can give a helpful message
     const { data, error } = await supabase
       .from('orders')
       .select(`
         *,
+        pharmacy:pharmacies(id, name, address, suburb, city),
         items:order_items(
           *,
           medicine:medicines(*)
         )
       `)
       .eq('booking_ref', bookingRef.toUpperCase())
-      .eq('pharmacy_id', pharmacyId)
       .single();
 
-    if (error) throw new Error('Booking not found for this pharmacy.');
+    if (error || !data) throw new Error('Booking reference not found. Please check the code and try again.');
+
+    // Order exists but belongs to a different pharmacy
+    if (data.pharmacy_id !== pharmacyId) {
+      const ph = data.pharmacy as any;
+      const phName = ph?.name || 'another pharmacy';
+      const phAddr = [ph?.address, ph?.suburb, ph?.city].filter(Boolean).join(', ');
+      throw new Error(
+        `This order is not for your pharmacy.\n\nPlease direct the customer to: ${phName}${phAddr ? ` — ${phAddr}` : ''}`
+      );
+    }
+
     return mapOrder(data);
   },
 

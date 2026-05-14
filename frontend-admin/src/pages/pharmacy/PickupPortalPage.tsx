@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { adminApi } from '../../api/auth';
 import { FiSearch, FiCheckCircle, FiXCircle, FiClock, FiUser, FiPackage } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
@@ -9,6 +9,7 @@ export default function PickupPortalPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [wrongPharmacyMsg, setWrongPharmacyMsg] = useState('');
 
   const handleSearch = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -16,11 +17,17 @@ export default function PickupPortalPage() {
 
     setIsLoading(true);
     setOrder(null);
+    setWrongPharmacyMsg('');
     try {
       const data = await adminApi.getOrder(bookingRefInput);
       setOrder(data);
     } catch (err: any) {
-      toast.error(err.message || 'Booking not found');
+      const msg: string = err.message || 'Booking not found';
+      if (msg.startsWith('This order is not for your pharmacy')) {
+        setWrongPharmacyMsg(msg);
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -89,6 +96,20 @@ export default function PickupPortalPage() {
             {isLoading ? 'Searching...' : 'Search'}
           </button>
         </form>
+
+        {wrongPharmacyMsg && (
+          <div style={{
+            background: '#FFF7ED', border: '1px solid #FB923C', borderRadius: 12,
+            padding: '16px 20px', marginBottom: 16,
+          }}>
+            <div style={{ fontWeight: 700, color: '#C2410C', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <FiXCircle /> Wrong Pharmacy
+            </div>
+            {wrongPharmacyMsg.split('\n').filter(Boolean).map((line, i) => (
+              <div key={i} style={{ fontSize: 13, color: '#92400E', marginTop: i === 0 ? 0 : 6 }}>{line}</div>
+            ))}
+          </div>
+        )}
 
         {order ? (
           <div className="medicine-card" style={{ cursor: 'default', border: '1px solid var(--color-border)' }}>
