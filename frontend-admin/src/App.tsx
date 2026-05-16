@@ -10,6 +10,7 @@ import { Toaster } from 'react-hot-toast';
 const LoginPage = lazy(() => import('./pages/pharmacy/LoginPage'));
 const DashboardPage = lazy(() => import('./pages/pharmacy/DashboardPage'));
 const InventoryPage = lazy(() => import('./pages/pharmacy/InventoryPage'));
+const ReservationsPage = lazy(() => import('./pages/pharmacy/ReservationsPage'));
 const PickupPortalPage = lazy(() => import('./pages/pharmacy/PickupPortalPage'));
 const ProfilePage = lazy(() => import('./pages/pharmacy/ProfilePage'));
 
@@ -54,6 +55,9 @@ export default function App() {
           } />
           <Route path="/admin/inventory" element={
             <ProtectedRoute><AdminLayout><InventoryPage /></AdminLayout></ProtectedRoute>
+          } />
+          <Route path="/admin/reservations" element={
+            <ProtectedRoute><AdminLayout><ReservationsPage /></AdminLayout></ProtectedRoute>
           } />
           <Route path="/admin/pickups" element={
             <ProtectedRoute><AdminLayout><PickupPortalPage /></AdminLayout></ProtectedRoute>

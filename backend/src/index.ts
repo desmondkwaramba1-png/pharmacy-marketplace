@@ -15,6 +15,7 @@ import medicineRoutes from './routes/medicines';
 import pharmacyRoutes from './routes/pharmacies';
 import adminRoutes from './routes/admin';
 import cartRoutes from './routes/cart';
+import complianceRoutes from './routes/compliance';
 import { errorHandler, notFound } from './middleware/errorHandler';
 import { cleanupExpiredReservations } from './controllers/cartController';
 
@@ -66,6 +67,7 @@ app.use('/api/medicines', medicineRoutes);
 app.use('/api/pharmacies', pharmacyRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/compliance', complianceRoutes);
 
 // 404 & Error handling
 app.use('/uploads', express.static('public/uploads'));

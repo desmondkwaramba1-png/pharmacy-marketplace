@@ -36,8 +36,12 @@ model Pharmacy {
   email          String?
   operatingHours String? // JSON string
   logoUrl        String?
-  isActive       Boolean @default(true)
-  ownerId        String? @unique
+  isActive            Boolean @default(true)
+  ownerId             String? @unique
+  mcazLicenseNumber   String?
+  mcazVerified        Boolean @default(false)
+  licenseValid        Boolean @default(false)
+  marketplaceStatus   String  @default("pending")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -101,6 +105,7 @@ model Order {
   createdAt      DateTime @default(now())
   expiresAt      DateTime
   items          OrderItem[]
+  pharmacy       Pharmacy @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
 }
 
 model OrderItem {
