@@ -7,10 +7,21 @@ import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { useDebounce } from '../../hooks/useDebounce';
 import type { Medicine } from '../../types';
-import { FiSearch, FiX, FiClock, FiChevronRight, FiMapPin, FiShoppingCart, FiUser } from 'react-icons/fi';
+import { FiSearch, FiX, FiClock, FiChevronRight, FiMapPin, FiShoppingCart, FiUser, FiArrowRight } from 'react-icons/fi';
 import { FaPills } from 'react-icons/fa';
 
 const RECENT_KEY = 'medifind_recent';
+
+const CATEGORIES = [
+  { icon: '💊', label: 'Pain Relief', query: 'paracetamol' },
+  { icon: '🩺', label: 'Antibiotics', query: 'amoxicillin' },
+  { icon: '❤️', label: 'Cardiac', query: 'aspirin' },
+  { icon: '🫁', label: 'Respiratory', query: 'salbutamol' },
+  { icon: '🩹', label: 'Wound Care', query: 'antiseptic' },
+  { icon: '💉', label: 'Vitamins', query: 'vitamin' },
+  { icon: '🧴', label: 'Skin Care', query: 'hydrocortisone' },
+  { icon: '👁️', label: 'Eye Drops', query: 'eye drops' },
+];
 
 function getRecent(): string[] {
   try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch { return []; }
@@ -26,6 +37,7 @@ export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const debouncedQuery = useDebounce(query, 400);
   const { coords } = useGeolocation();
   const recent = getRecent();
@@ -42,61 +54,92 @@ export default function HomePage() {
     navigate(`/search?q=${encodeURIComponent(q.trim())}${coords ? `&lat=${coords.lat}&lng=${coords.lng}` : ''}`);
   };
 
+  const handleCategoryClick = (cat: typeof CATEGORIES[0]) => {
+    setActiveCategory(cat.query);
+    handleSearch(cat.query);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSearch(query);
   };
 
-
   return (
     <div className="page">
+      <style>{`
+        @keyframes hp-fadeInUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+      `}</style>
       {/* Hero header */}
-      <div className="home-header">
-        <div className="home-top-bar">
-          <div className="home-greeting">🇿🇼 Zimbabwe</div>
-          <div style={{ display: 'flex', gap: 12 }}>
-            <button 
-              className="btn-icon" 
+      <div style={{
+        background: 'linear-gradient(135deg, #b8eaf3 0%, #d4f5ec 50%, #e8f8f5 100%)',
+        padding: '20px 16px 32px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Decorative orbs */}
+        <div style={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.55) 0%, transparent 65%)', top: -160, left: -80, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(2,195,154,0.18) 0%, transparent 70%)', bottom: -60, right: '20%', pointerEvents: 'none' }} />
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, color: '#0284a8', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)', borderRadius: 999, padding: '4px 12px', border: '1px solid rgba(2,132,168,0.2)' }}>
+              🇿🇼 Zimbabwe
+            </div>
+            {isAuthenticated && user?.firstName && (
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#0f172a', marginTop: 6, animation: 'hp-fadeInUp 0.4s ease both' }}>
+                Hello, {user.firstName} 👋
+              </div>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
               onClick={() => {
-                if (isAuthenticated) {
-                  setCartOpen(true);
-                } else {
-                  navigate(`/login?returnTo=${encodeURIComponent('/')}&message=${encodeURIComponent('Please sign in to access your cart and personalized experience')}`);
-                }
-              }} 
-              style={{ color: 'white', position: 'relative', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', padding: 8 }}
+                if (isAuthenticated) setCartOpen(true);
+                else navigate(`/login?returnTo=${encodeURIComponent('/')}&message=${encodeURIComponent('Please sign in to access your cart')}`);
+              }}
+              style={{ position: 'relative', color: '#0284a8', background: 'rgba(255,255,255,0.85)', borderRadius: '50%', padding: 10, border: '1.5px solid rgba(2,132,168,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
               aria-label="View Cart"
             >
-              <FiShoppingCart size={22} />
+              <FiShoppingCart size={20} />
               {cart && cart.itemCount > 0 && (
-                <span style={{ 
-                  position: 'absolute', top: -4, right: -4, background: 'var(--color-error)', 
-                  color: 'white', fontSize: 10, minWidth: 18, height: 18, borderRadius: 9, 
+                <span style={{
+                  position: 'absolute', top: -4, right: -4, background: '#ef4444',
+                  color: 'white', fontSize: 10, minWidth: 18, height: 18, borderRadius: 9,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700,
-                  border: '2px solid var(--color-primary-dark, #026a78)', padding: '0 4px'
+                  border: '2px solid white', padding: '0 4px',
                 }}>
                   {cart.itemCount}
                 </span>
               )}
             </button>
-            <button 
-              className="btn-icon" 
-              onClick={() => navigate('/login')} 
-              style={{ color: 'white', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', padding: 8 }}
+            <button
+              onClick={() => navigate('/login')}
+              style={{ color: '#0284a8', background: 'rgba(255,255,255,0.85)', borderRadius: '50%', padding: 10, border: '1.5px solid rgba(2,132,168,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
               aria-label={isAuthenticated ? 'Account' : 'Sign In'}
             >
-              <FiUser size={22} />
+              <FiUser size={20} />
             </button>
           </div>
         </div>
-        <h1 className="home-title">Find Medicines Near You</h1>
-        <div className="location-chip" onClick={() => {}}>
-          <FiMapPin />
-          <span>{coords ? 'Using your location' : 'Harare, Zimbabwe'}</span>
+
+        <div style={{ position: 'relative', zIndex: 1, animation: 'hp-fadeInUp 0.45s ease both' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#0284a8', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>MediFind ZW</p>
+          <h1 style={{ fontSize: 'clamp(22px, 6vw, 32px)', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.03em', lineHeight: 1.15, margin: '0 0 12px' }}>
+            Find Medicines<br />Near You
+          </h1>
+        </div>
+
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)', border: '1.5px solid rgba(2,132,168,0.2)', borderRadius: 999, padding: '5px 14px', position: 'relative', zIndex: 1 }}>
+          <FiMapPin size={13} color="#0284a8" />
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#0284a8' }}>{coords ? 'Using your location' : 'Harare, Zimbabwe'}</span>
         </div>
       </div>
 
-      {/* Lifted search card */}
       <div className="page-content">
+        {/* Lifted search card */}
         <div className="search-lift">
           <div className="search-bar">
             <span className="search-icon"><FiSearch /></span>
@@ -118,46 +161,87 @@ export default function HomePage() {
             <button
               id="search-btn"
               className="btn btn-primary btn-full"
-              style={{ marginTop: 10 }}
+              style={{ marginTop: 12 }}
               onClick={() => handleSearch(query)}
             >
-              Search
+              <FiSearch size={16} /> Search Medicines
             </button>
           )}
         </div>
 
+        {/* Category chips */}
+        <div style={{ marginTop: 24 }}>
+          <div className="section-header">
+            <h2 className="section-title">Browse by Category</h2>
+          </div>
+          <div className="category-chips">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.query}
+                className={`category-chip ${activeCategory === cat.query ? 'active' : ''}`}
+                onClick={() => handleCategoryClick(cat)}
+                aria-label={cat.label}
+              >
+                <span className="category-chip-icon">{cat.icon}</span>
+                <span className="category-chip-label">{cat.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Recent searches */}
         {recent.length > 0 && (
           <div style={{ marginTop: 24 }}>
             <div className="section-header">
               <h2 className="section-title">Recent Searches</h2>
-              <button className="btn-ghost btn" onClick={() => { localStorage.removeItem(RECENT_KEY); window.location.reload(); }}>
+              <button
+                className="btn-ghost btn"
+                onClick={() => { localStorage.removeItem(RECENT_KEY); window.location.reload(); }}
+              >
                 Clear
               </button>
             </div>
-            {recent.map((r) => (
-              <div
-                key={r}
-                className="recent-item"
-                onClick={() => handleSearch(r)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch(r)}
-              >
-                <span style={{ fontSize: 18, color: 'var(--color-text-secondary)', display: 'flex' }}><FiClock /></span>
-                <span className="recent-item-text">{r}</span>
-                <span style={{ color: 'var(--color-text-disabled)', fontSize: 18, display: 'flex' }}><FiChevronRight /></span>
-              </div>
-            ))}
+            <div style={{
+              background: 'var(--color-surface)',
+              borderRadius: 'var(--radius-xl)',
+              border: '1px solid var(--color-border)',
+              padding: '0 12px',
+              boxShadow: 'var(--shadow-sm)',
+            }}>
+              {recent.map((r, i) => (
+                <div
+                  key={r}
+                  className="recent-item"
+                  onClick={() => handleSearch(r)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch(r)}
+                  style={{ borderBottom: i < recent.length - 1 ? '1px solid var(--color-border)' : 'none' }}
+                >
+                  <span style={{ fontSize: 16, color: 'var(--color-text-secondary)', display: 'flex' }}><FiClock /></span>
+                  <span className="recent-item-text">{r}</span>
+                  <span style={{ color: 'var(--color-text-disabled)', fontSize: 16, display: 'flex' }}><FiChevronRight /></span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
         {/* Popular medicines grid */}
         {popular && popular.length > 0 && (
-          <div style={{ marginTop: 24 }}>
+          <div style={{ marginTop: 28 }}>
             <div className="section-header">
-              <h2 className="section-title">Common Medicines</h2>
+              <div>
+                <p style={{ fontSize: 11, fontWeight: 700, color: '#0284a8', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 2px' }}>Available Now</p>
+                <h2 className="section-title" style={{ color: '#0f172a', fontWeight: 800, letterSpacing: '-0.03em', margin: 0 }}>Common Medicines</h2>
+              </div>
+              <button
+                className="btn-ghost btn"
+                style={{ fontSize: 13, gap: 4 }}
+                onClick={() => navigate('/search?q=medicine')}
+              >
+                View all <FiArrowRight size={14} />
+              </button>
             </div>
             <div className="popular-grid">
               {popular.map((med) => (
@@ -168,49 +252,66 @@ export default function HomePage() {
                   role="button"
                   tabIndex={0}
                   aria-label={med.genericName}
-                  style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 16 }}
+                  style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 14 }}
                 >
-                  <div style={{ display: 'flex', gap: 12 }}>
-                    <div className="popular-card-icon" style={{ width: 64, height: 64, padding: med.imageUrl ? 0 : undefined, overflow: 'hidden', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <div
+                      className="popular-card-icon"
+                      style={{ overflow: med.imageUrl ? 'hidden' : undefined }}
+                    >
                       {med.imageUrl ? (
-                        <img src={med.imageUrl} alt={med.genericName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5-7v-2h-2V8h-2v2H8v2h2v2h2v-2h2z'/%3E%3C/svg%3E"; }} />
+                        <img
+                          src={med.imageUrl}
+                          alt={med.genericName}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          loading="lazy"
+                          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5-7v-2h-2V8h-2v2H8v2h2v2h2v-2h2z'/%3E%3C/svg%3E"; }}
+                        />
                       ) : (
-                        <FaPills color="var(--color-primary)" size={32} />
+                        <FaPills color="var(--color-primary)" size={26} />
                       )}
                     </div>
-                    <div>
-                      <div className="popular-card-name" style={{ lineHeight: 1.2, fontSize: 16 }}>{med.genericName}</div>
-                      {med.dosage && <div className="popular-card-dosage" style={{ marginTop: 4 }}>{med.dosage}</div>}
-                      <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 4 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="popular-card-name">{med.genericName}</div>
+                      {med.dosage && <div className="popular-card-dosage">{med.dosage}</div>}
+                      <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 3 }}>
                         {[med.brandName, med.form].filter(Boolean).join(' · ')}
                       </div>
                     </div>
                   </div>
-                  
-                  {med.nearestPharmacy && (
-                    <div style={{ background: 'var(--color-bg)', padding: '10px 12px', borderRadius: 8, marginTop: 'auto' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-primary)' }}>Nearest available</span>
+
+                  {med.nearestPharmacy ? (
+                    <div style={{
+                      background: 'var(--color-bg)',
+                      padding: '10px 12px',
+                      borderRadius: 10,
+                      border: '1px solid var(--color-border)',
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                          Nearest
+                        </span>
                         {med.distance != null && (
-                          <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <FiMapPin /> {(med.distance < 1 ? `${Math.round(med.distance * 1000)}m` : `${med.distance.toFixed(1)}km`)}
+                          <span style={{ fontSize: 11, color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 3, fontWeight: 500 }}>
+                            <FiMapPin size={10} />
+                            {med.distance < 1 ? `${Math.round(med.distance * 1000)}m` : `${med.distance.toFixed(1)}km`}
                           </span>
                         )}
                       </div>
-                      <div style={{ fontSize: 14, fontWeight: 600 }}>{med.nearestPharmacy.name}</div>
-                      <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
-                        {med.nearestPharmacy.address}{med.nearestPharmacy.suburb ? `, ${med.nearestPharmacy.suburb}` : ''}
-                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', lineHeight: 1.2 }}>{med.nearestPharmacy.name}</div>
                       {(med.price != null || med.standardPrice != null) && (
-                        <div style={{ marginTop: 8, fontSize: 15, fontWeight: 700, color: 'var(--color-text)' }}>
+                        <div style={{ marginTop: 6, fontSize: 15, fontWeight: 800, color: 'var(--color-primary)' }}>
                           ${(med.price ?? med.standardPrice).toFixed(2)}
                         </div>
                       )}
                     </div>
-                  )}
-                  {!med.nearestPharmacy && (
-                    <div style={{ marginTop: 'auto', fontSize: 13, color: 'var(--color-error)', background: 'var(--color-error-bg)', padding: '8px 12px', borderRadius: 8 }}>
-                      Currently out of stock
+                  ) : (
+                    <div style={{
+                      fontSize: 12, color: 'var(--color-error)', fontWeight: 600,
+                      background: 'var(--color-error-bg)', padding: '8px 12px',
+                      borderRadius: 8, border: '1px solid rgba(232,93,93,0.2)',
+                    }}>
+                      Out of stock nearby
                     </div>
                   )}
                 </div>
@@ -220,18 +321,31 @@ export default function HomePage() {
         )}
 
         {/* How it works */}
-        <div className="how-it-works" style={{ marginTop: 24, flexDirection: 'column', gap: 4, textAlign: 'center' }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>How it works</span>
-          <div className="how-it-works">
-            <span>① Search</span>
-            <span style={{ color: 'var(--color-border)' }}>→</span>
-            <span>② View Stocks</span>
-            <span style={{ color: 'var(--color-border)' }}>→</span>
-            <span>③ Get Directions</span>
+        <div style={{ marginTop: 28, borderRadius: 20, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+          <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #014d5e 100%)', padding: '16px 20px 14px' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: '0 0 4px' }}>Simple process</p>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.03em' }}>How MediFind Works</h3>
+          </div>
+          <div style={{ background: '#fff', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {[
+              { num: '01', title: 'Search', desc: 'Type any medicine name or browse by category', color: '#0284a8', bg: 'linear-gradient(135deg, #e0f4f8, #b3e5f0)' },
+              { num: '02', title: 'Compare & Reserve', desc: 'See real-time stock across pharmacies near you', color: '#7C3AED', bg: 'linear-gradient(135deg, #EDE9FE, #DDD6FE)' },
+              { num: '03', title: 'Collect', desc: 'Head to the pharmacy — your order is waiting', color: '#059669', bg: 'linear-gradient(135deg, #D1FAE5, #A7F3D0)' },
+            ].map((step) => (
+              <div key={step.num} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: step.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: step.color }}>{step.num}</span>
+                </div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#0f172a', letterSpacing: '-0.02em' }}>{step.title}</div>
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 1 }}>{step.desc}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-
+        <div style={{ height: 24 }} />
       </div>
     </div>
   );

@@ -140,23 +140,23 @@ export default function CartDrawer() {
         }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', borderBottom: '1px solid var(--color-border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: 'linear-gradient(135deg, #b8eaf3 0%, #d4f5ec 50%, #e8f8f5 100%)', borderBottom: '1px solid rgba(2,132,168,0.12)' }}>
           {step !== 'cart' && step !== 'success' && step !== 'processing' ? (
-            <button className="btn-icon" onClick={back}><FiArrowLeft /></button>
+            <button onClick={back} style={{ background: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#0284a8' }}><FiArrowLeft size={16} /></button>
           ) : (
-            <h2 style={{ fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FiShoppingBag color="var(--color-primary)" />
-              {step === 'success' ? 'Order Confirmed' : 'Cart & Bookings'}
+            <h2 style={{ fontSize: '17px', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px', margin: 0, letterSpacing: '-0.02em' }}>
+              <FiShoppingBag color="#0284a8" size={20} />
+              {step === 'success' ? 'Order Confirmed' : 'Your Cart'}
             </h2>
           )}
           {step !== 'cart' && step !== 'success' && step !== 'processing' && (
-            <h2 style={{ fontSize: '16px', fontWeight: 600 }}>
+            <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', margin: 0 }}>
               {step === 'fulfillment' ? 'Fulfillment' :
                step === 'delivery-address' ? 'Delivery Address' :
                step === 'payment-method' ? 'Payment' : 'Card Details'}
             </h2>
           )}
-          <button className="btn-icon" onClick={closeDrawer}><FiX /></button>
+          <button onClick={closeDrawer} style={{ background: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#0284a8' }}><FiX size={16} /></button>
         </div>
 
         {/* Step: Success */}
@@ -251,27 +251,28 @@ export default function CartDrawer() {
                   <span>Reserve expires in 10 min. Checkout each pharmacy separately.</span>
                 </div>
                 {groups.map(group => (
-                  <div key={group.id} style={{ border: '1px solid var(--color-border)', borderRadius: 12, overflow: 'hidden' }}>
-                    <div style={{ background: 'var(--color-bg)', padding: '12px 16px', borderBottom: '1px solid var(--color-border)', fontWeight: 700 }}>
+                  <div key={group.id} style={{ background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                    <div style={{ background: 'linear-gradient(135deg, #f8fafc, #f0f9ff)', padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 800, fontSize: 14, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <FiShoppingBag size={14} color="#0284a8" />
                       {group.name}
                     </div>
                     <div style={{ padding: '0 16px' }}>
                       {group.items.map((item: any) => (
-                        <div key={item.id} style={{ display: 'flex', gap: '12px', padding: '14px 0', borderBottom: '1px solid var(--color-border)' }}>
+                        <div key={item.id} style={{ display: 'flex', gap: '12px', padding: '14px 0', borderBottom: '1px solid #f1f5f9' }}>
                           <div style={{ flex: 1 }}>
-                            <div style={{ fontWeight: 600, fontSize: 14 }}>{item.medicine?.genericName}</div>
+                            <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a' }}>{item.medicine?.genericName}</div>
                             <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: item.isExpired ? 'var(--color-error)' : 'var(--color-warning)' }}>
-                                <FiClock />
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: item.isExpired ? '#fee2e2' : '#fef3c7', color: item.isExpired ? '#dc2626' : '#D97706' }}>
+                                <FiClock size={10} />
                                 {item.isExpired ? 'Expired' : `${Math.floor(item.remainingSeconds / 60)}:${(item.remainingSeconds % 60).toString().padStart(2, '0')}`}
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <span style={{ fontWeight: 600, fontSize: 13 }}>
+                                <span style={{ fontWeight: 800, fontSize: 14, color: '#0284a8' }}>
                                   ${(Number(item.price) * item.quantity).toFixed(2)}
-                                  {item.quantity > 1 && <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}> (×{item.quantity})</span>}
+                                  {item.quantity > 1 && <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}> (×{item.quantity})</span>}
                                 </span>
                                 <button className="btn-icon" onClick={() => removeFromCart(item.id)} style={{ padding: 4 }}>
-                                  <FiTrash2 size={14} color="var(--color-text-disabled)" />
+                                  <FiTrash2 size={14} color="#94a3b8" />
                                 </button>
                               </div>
                             </div>
@@ -279,16 +280,15 @@ export default function CartDrawer() {
                         </div>
                       ))}
                     </div>
-                    <div style={{ padding: 16 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, fontWeight: 700 }}>
-                        <span>Subtotal:</span>
-                        <span>${group.subtotal.toFixed(2)}</span>
+                    <div style={{ padding: 16, background: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, fontWeight: 800, fontSize: 15 }}>
+                        <span style={{ color: '#64748b' }}>Subtotal</span>
+                        <span style={{ color: '#0284a8' }}>${group.subtotal.toFixed(2)}</span>
                       </div>
                       <button
-                        className="btn btn-primary btn-full"
+                        style={{ width: '100%', height: 44, background: group.items.some((i: any) => i.isExpired) ? '#e2e8f0' : 'linear-gradient(135deg, #0284a8, #02C39A)', color: group.items.some((i: any) => i.isExpired) ? '#94a3b8' : '#fff', border: 'none', borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: group.items.some((i: any) => i.isExpired) ? 'not-allowed' : 'pointer', boxShadow: group.items.some((i: any) => i.isExpired) ? 'none' : '0 4px 14px rgba(2,132,168,0.3)' }}
                         onClick={() => startCheckout(group.id, group.name, group.subtotal)}
                         disabled={group.items.some((i: any) => i.isExpired)}
-                        style={{ height: 42 }}
                       >
                         Checkout {group.name} →
                       </button>

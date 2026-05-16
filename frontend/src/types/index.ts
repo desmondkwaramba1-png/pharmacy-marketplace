@@ -21,6 +21,11 @@ export interface Medicine {
   description?: string;
   standardPrice?: number;
   imageUrl?: string;
+  // MCAZ compliance
+  distributionCategory?: 'OTC' | 'PIM' | 'PP';
+  requiresPrescription?: boolean;
+  advertisingClass?: 'freely_advertised' | 'restricted' | 'no_public_ad';
+  isBanned?: boolean;
 }
 
 export interface Pharmacy {
@@ -58,6 +63,9 @@ export interface SearchResult {
   price?: number | null;
   distance?: number | null;
   lastUpdated: string;
+  requiresPrescription?: boolean;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface MedicineDetail extends Medicine {
@@ -83,6 +91,8 @@ export interface InventoryItem {
   medicineId: string;
   stockStatus: StockStatus;
   quantity: number;
+  reservedQuantity?: number;
+  availableQuantity?: number;
   price?: number | null;
   lastUpdated: string;
   medicine: Medicine;
